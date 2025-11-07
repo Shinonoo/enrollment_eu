@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admission Management - MSEFC</title>
+    <link rel="stylesheet" href="/public/components/css/sidebar-styles.css">
+    <link rel="stylesheet" href="/public/components/css/page-transitions.css">
+    <link rel="stylesheet" href="/public/components/css/admission-styles.css">
+</head>
+<body>
+    <div class="dashboard">
+        <!-- SIDEBAR INJECTED BY sidebar-injector.js -->
+        
+        <main class="main-content">
+            <div class="page-header">
+                <div>
+                    <h1 style="font-size: 2rem; color: #1f2937;">Admission Management</h1>
+                    <p style="color: #6b7280;">View and manage student applications</p>
+                </div>
+                <button onclick="window.open('/views/public/admission.html', '_blank')" class="btn btn-primary">+ New Application</button>
+            </div>
+
+            <div class="filters">
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="filterStatus" onchange="loadApplications()">
+                        <option value="">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>School Level</label>
+                    <select id="filterLevel" onchange="loadApplications()">
+                        <option value="">All Levels</option>
+                        <option value="JHS">Junior High School</option>
+                        <option value="SHS">Senior High School</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Grade Level</label>
+                    <select id="filterGrade" onchange="loadApplications()">
+                        <option value="">All Grades</option>
+                        <option value="7">Grade 7</option>
+                        <option value="8">Grade 8</option>
+                        <option value="9">Grade 9</option>
+                        <option value="10">Grade 10</option>
+                        <option value="11">Grade 11</option>
+                        <option value="12">Grade 12</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Application Type</label>
+                    <select id="filterType" onchange="loadApplications()">
+                        <option value="">All Types</option>
+                        <option value="new">New</option>
+                        <option value="returning">Returning</option>
+                        <option value="transferee">Transferee</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <div id="loading" class="loading">Loading applications...</div>
+                <div id="emptyState" class="empty-state hidden">No applications found</div>
+                <table class="table" id="applicationsTable" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Level</th>
+                            <th>Grade</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Submitted</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Details Modal -->
+    <div id="detailsModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Application Details</h2>
+            </div>
+            <div id="modalContent" class="modal-body">
+                <p style="text-align: center;">Loading...</p>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeModal()" class="btn btn-primary">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/public/components/js/sidebar-injector.js"></script>
+    <script src="/public/components/js/shared.js"></script>
+    <script src="/public/components/js/admission.js"></script>
+
+</body>
+</html>

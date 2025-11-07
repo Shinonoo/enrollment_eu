@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pending Payments - Cashier</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f3f4f6; }
+        .dashboard { display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background: white; box-shadow: 2px 0 10px rgba(0,0,0,0.1); position: fixed; height: 100vh; overflow-y: auto; }
+        .sidebar-header { padding: 2rem; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; text-align: center; }
+        .sidebar-menu { padding: 1.5rem; }
+        .sidebar-item { display: block; padding: 1rem; margin-bottom: 0.5rem; border-radius: 0.5rem; color: #374151; text-decoration: none; }
+        .sidebar-item:hover { background: #fef3c7; color: #f59e0b; }
+        .sidebar-item.active { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; }
+        .main-content { margin-left: 260px; flex: 1; padding: 2rem; }
+        
+        .table-container { background: white; border-radius: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow: hidden; margin-bottom: 2rem; }
+        .table { width: 100%; border-collapse: collapse; }
+        .table thead { background: #f9fafb; }
+        .table th { padding: 1rem; text-align: left; font-weight: 600; color: #374151; font-size: 0.875rem; border-bottom: 2px solid #e5e7eb; }
+        .table td { padding: 1rem; border-bottom: 1px solid #e5e7eb; font-size: 0.875rem; }
+        .table tbody tr:hover { background: #f9fafb; }
+        
+        .badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+        .badge-pending { background: #fee2e2; color: #991b1b; }
+        .badge-partial { background: #fef3c7; color: #92400e; }
+        .badge-paid { background: #d1fae5; color: #065f46; }
+        
+        .btn { padding: 0.5rem 1rem; border-radius: 0.375rem; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 500; }
+        .btn-sm { padding: 0.375rem 0.75rem; font-size: 0.75rem; }
+        .btn-primary { background: #f59e0b; color: white; }
+        .btn-secondary { background: #6b7280; color: white; }
+        .btn:hover { opacity: 0.9; }
+        
+        .loading { text-align: center; padding: 3rem; color: #6b7280; }
+        .empty-state { text-align: center; padding: 3rem; color: #6b7280; }
+        .hidden { display: none; }
+        
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 9999; overflow-y: auto; display: none; }
+        .modal { background: white; max-width: 600px; margin: 2rem auto; border-radius: 1rem; box-shadow: 0 20px 25px rgba(0,0,0,0.15); }
+        .modal-header { padding: 2rem; border-bottom: 1px solid #e5e7eb; }
+        .modal-title { font-size: 1.5rem; color: #1f2937; }
+        .modal-body { padding: 2rem; }
+        .modal-footer { padding: 1.5rem; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 1rem; }
+        
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; color: #374151; font-weight: 500; }
+        .form-group input, .form-group select { width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-size: 1rem; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: #f59e0b; }
+        
+        .payment-info { background: #fef3c7; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem; }
+        .payment-info p { margin-bottom: 0.5rem; color: #78350f; }
+        .payment-info strong { color: #92400e; }
+        
+        .success-message { background: #d1fae5; color: #065f46; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; text-align: center; font-weight: 500; }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>💵 Enrollment System</h2>
+                <p>Cashier Portal</p>
+            </div>
+            <nav class="sidebar-menu">
+                <a href="/views/cashier/dashboard.html" class="sidebar-item">📊 Dashboard</a>
+                <a href="/views/cashier/pending-payments.html" class="sidebar-item active">💰 Pending Payments</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div style="margin-bottom: 2rem;">
+                <h1 style="font-size: 2rem; color: #1f2937;">Pending Payments</h1>
+                <p style="color: #6b7280;">Process student payment transactions</p>
+            </div>
+
+            <div class="table-container">
+                <div id="loading" class="loading">Loading payments...</div>
+                <div id="emptyState" class="empty-state hidden">No pending payments</div>
+                <table class="table" id="paymentsTable" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Level/Grade</th>
+                            <th>Scheme</th>
+                            <th>Total</th>
+                            <th>Paid</th>
+                            <th>Balance</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Payment Recording Modal -->
+    <div id="paymentModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Record Payment</h2>
+            </div>
+            <div class="modal-body">
+                <div id="successMsg" class="success-message hidden"></div>
+                
+                <div class="payment-info" id="paymentInfo">
+                    <!-- Payment info will be populated here -->
+                </div>
+
+                <form id="paymentForm">
+                    <input type="hidden" id="paymentRecordId">
+                    
+                    <div class="form-group">
+                        <label>Payment Amount <span style="color: red;">*</span></label>
+                        <input type="number" id="amount" step="0.01" min="0.01" required placeholder="0.00">
+                        <small style="color: #6b7280;">Enter amount being paid</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Payment Method <span style="color: red;">*</span></label>
+                        <select id="paymentMethod" required>
+                            <option value="">Select method...</option>
+                            <option value="cash">Cash</option>
+                            <option value="gcash">GCash</option>
+                            <option value="bank_transfer">Bank Transfer</option>
+                            <option value="check">Check</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Reference Number</label>
+                        <input type="text" id="referenceNumber" placeholder="OR/Receipt number">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Notes</label>
+                        <input type="text" id="notes" placeholder="Additional notes...">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeModal()" class="btn btn-secondary">Cancel</button>
+                <button onclick="submitPayment()" class="btn btn-primary" id="submitBtn">Record Payment</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = '/views/public/login.html';
+
+        let currentPayment = null;
+
+        async function loadPayments() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('emptyState').classList.add('hidden');
+            document.getElementById('paymentsTable').style.display = 'none';
+
+            try {
+                const response = await fetch('http://localhost:3000/api/payments/pending', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+
+                const data = await response.json();
+                document.getElementById('loading').style.display = 'none';
+
+                if (response.ok && data.success) {
+                    if (data.payments.length === 0) {
+                        document.getElementById('emptyState').classList.remove('hidden');
+                    } else {
+                        displayPayments(data.payments);
+                    }
+                } else {
+                    alert('Failed to load payments');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('loading').style.display = 'none';
+                alert('Connection error');
+            }
+        }
+
+        function displayPayments(payments) {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            payments.forEach(payment => {
+                const row = document.createElement('tr');
+                const total = parseFloat(payment.total_amount);
+                const paid = parseFloat(payment.amount_paid);
+                const balance = total - paid;
+                
+                row.innerHTML = `
+                    <td><strong>${payment.first_name} ${payment.last_name}</strong></td>
+                    <td>${payment.school_level} - Grade ${payment.grade_level}</td>
+                    <td>${payment.scheme_name || 'N/A'}</td>
+                    <td>₱${total.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</td>
+                    <td>₱${paid.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</td>
+                    <td><strong>₱${balance.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</strong></td>
+                    <td><span class="badge badge-${payment.payment_status}">${payment.payment_status}</span></td>
+                    <td></td>
+                `;
+
+                const actionCell = row.querySelector('td:last-child');
+                const btn = document.createElement('button');
+                btn.className = 'btn btn-primary btn-sm';
+                btn.textContent = 'Record Payment';
+                btn.onclick = () => openPaymentModal(payment);
+                actionCell.appendChild(btn);
+
+                tbody.appendChild(row);
+            });
+
+            document.getElementById('paymentsTable').style.display = 'table';
+        }
+
+        function openPaymentModal(payment) {
+            currentPayment = payment;
+            const total = parseFloat(payment.total_amount);
+            const paid = parseFloat(payment.amount_paid);
+            const balance = total - paid;
+
+            document.getElementById('paymentInfo').innerHTML = `
+                <p><strong>Student:</strong> ${payment.first_name} ${payment.last_name}</p>
+                <p><strong>Total Amount:</strong> ₱${total.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</p>
+                <p><strong>Amount Paid:</strong> ₱${paid.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</p>
+                <p><strong>Balance:</strong> ₱${balance.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</p>
+            `;
+
+            document.getElementById('paymentRecordId').value = payment.payment_record_id;
+            document.getElementById('amount').max = balance.toFixed(2);
+            document.getElementById('successMsg').classList.add('hidden');
+            document.getElementById('paymentModal').style.display = 'block';
+        }
+
+        async function submitPayment() {
+            const paymentRecordId = document.getElementById('paymentRecordId').value;
+            const amount = document.getElementById('amount').value;
+            const paymentMethod = document.getElementById('paymentMethod').value;
+            const referenceNumber = document.getElementById('referenceNumber').value;
+            const notes = document.getElementById('notes').value;
+
+            if (!amount || !paymentMethod) {
+                alert('Please fill in required fields');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Processing...';
+
+            try {
+                const response = await fetch('http://localhost:3000/api/payments/record', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        paymentRecordId,
+                        amount: parseFloat(amount),
+                        paymentMethod,
+                        referenceNumber,
+                        notes
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    const successMsg = document.getElementById('successMsg');
+                    successMsg.textContent = data.studentEnrolled ? 
+                        '🎉 Payment recorded! Student has been enrolled!' : 
+                        '✅ Payment recorded successfully!';
+                    successMsg.classList.remove('hidden');
+
+                    document.getElementById('paymentForm').reset();
+                    
+                    setTimeout(() => {
+                        closeModal();
+                        loadPayments();
+                    }, 2000);
+                } else {
+                    alert(data.message || 'Failed to record payment');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Connection error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Record Payment';
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('paymentModal').style.display = 'none';
+            document.getElementById('paymentForm').reset();
+            document.getElementById('successMsg').classList.add('hidden');
+        }
+
+        document.getElementById('paymentModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        loadPayments();
+    </script>
+</body>
+</html>

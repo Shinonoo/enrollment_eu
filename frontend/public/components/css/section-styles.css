@@ -1,0 +1,400 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f5f5f5;
+}
+
+
+.dashboard {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    background-color: #f5f5f5;
+    padding: 40px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+
+/* Header */
+.header {
+    margin-bottom: 30px;
+}
+
+
+.header h1 {
+    color: #7d1414;
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+
+.header-subtitle {
+    color: #666;
+    font-size: 14px;
+}
+
+
+/* Buttons */
+.btn {
+    padding: 12px 24px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+
+.btn-primary {
+    background: linear-gradient(135deg, #7d1414 0%, #9a3232 100%);
+    color: white;
+}
+
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #9a3232 0%, #b84545 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(125, 20, 20, 0.3);
+}
+
+
+.btn-secondary {
+    background: #6b7280;
+    color: white;
+}
+
+
+.btn-secondary:hover {
+    background: #4b5563;
+}
+
+
+/* Filter Tabs */
+.filter-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    flex-wrap: wrap;
+}
+
+
+.tab {
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    border: 2px solid transparent;
+    transition: all 0.3s;
+    background: white;
+    color: #333;
+}
+
+
+.tab:hover {
+    background: #f5f5f5;
+}
+
+
+.tab.active {
+    background: linear-gradient(135deg, #7d1414 0%, #9a3232 100%);
+    color: white;
+}
+
+
+/* Sections Grid */
+.sections-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 20px;
+}
+
+
+.section-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    min-height: 400px;
+}
+
+
+.section-card:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+
+.section-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+
+.section-card-header h3 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #2c3e50;
+    flex: 1;
+}
+
+
+.section-actions {
+    display: flex;
+    gap: 8px;
+}
+
+
+.icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    transition: background 0.2s;
+    font-size: 18px;
+    color: #666;
+}
+
+
+.icon-btn:hover {
+    background: #f0f0f0;
+    color: #7d1414;
+}
+
+
+.section-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+}
+
+
+.section-card-body p {
+    font-size: 14px;
+    color: #555;
+    margin: 0;
+}
+
+
+.section-card-body strong {
+    color: #333;
+    font-weight: 600;
+}
+
+
+/* Section Actions - Better spacing */
+.section-card-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: auto;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+
+.manage-btn {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    transition: all 0.2s;
+    background: linear-gradient(135deg, #7d1414 0%, #9a3232 100%);
+    color: white;
+    text-decoration: none;
+}
+
+
+.manage-btn:hover {
+    background: linear-gradient(135deg, #9a3232 0%, #b84545 100%);
+}
+
+
+.promote-btn {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    background: #6b7280;
+    color: white;
+    transition: all 0.2s;
+}
+
+
+.promote-btn:hover:not(:disabled) {
+    background: #4b5563;
+}
+
+
+.promote-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+
+/* Modal */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+
+.modal-overlay.show {
+    display: flex !important;
+}
+
+
+.modal {
+    background: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+
+.modal-header {
+    background: linear-gradient(135deg, #7d1414 0%, #9a3232 100%);
+    color: white;
+    padding: 24px;
+    border-radius: 16px 16px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+
+.modal-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+}
+
+
+.close-modal {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 28px;
+    cursor: pointer;
+    line-height: 1;
+    transition: transform 0.2s;
+    padding: 0;
+}
+
+
+.close-modal:hover {
+    transform: scale(1.1);
+}
+
+
+.modal-body {
+    padding: 24px;
+}
+
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #444;
+    font-size: 14px;
+}
+
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #7d1414;
+    box-shadow: 0 0 0 3px rgba(125, 20, 20, 0.1);
+}
+
+
+.student-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+
+.student-item:hover {
+    background: #f9f9f9;
+}
+
+
+.student-list {
+    flex: 1;
+    overflow-y: auto;
+}
+
+
+/* Utility */
+.hidden {
+    display: none;
+}

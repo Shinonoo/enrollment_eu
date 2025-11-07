@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accountant Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f3f4f6; }
+        .dashboard { display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background: white; box-shadow: 2px 0 10px rgba(0,0,0,0.1); position: fixed; height: 100vh; overflow-y: auto; }
+        .sidebar-header { padding: 2rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; text-align: center; }
+        .sidebar-menu { padding: 1.5rem; }
+        .sidebar-item { display: block; padding: 1rem; margin-bottom: 0.5rem; border-radius: 0.5rem; color: #374151; text-decoration: none; }
+        .sidebar-item:hover { background: #d1fae5; color: #10b981; }
+        .sidebar-item.active { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; }
+        .main-content { margin-left: 260px; flex: 1; padding: 2rem; }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat-card { background: white; padding: 1.5rem; border-radius: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .stat-value { font-size: 2.5rem; font-weight: 700; color: #1f2937; margin-bottom: 0.25rem; }
+        .stat-label { font-size: 0.875rem; color: #6b7280; text-transform: uppercase; }
+        
+        .card { background: white; padding: 2rem; border-radius: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 2rem; }
+        .card h3 { font-size: 1.25rem; color: #1f2937; margin-bottom: 1rem; }
+        
+        .btn { padding: 0.75rem 1.5rem; border-radius: 0.5rem; border: none; cursor: pointer; font-weight: 500; text-decoration: none; display: inline-block; }
+        .btn-primary { background: #10b981; color: white; }
+        .btn-secondary { background: #6b7280; color: white; }
+        .btn:hover { opacity: 0.9; }
+        
+        .actions-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>💰 Enrollment System</h2>
+                <p>Accountant Portal</p>
+            </div>
+            <nav class="sidebar-menu">
+                <a href="/views/accountant/dashboard.html" class="sidebar-item active">📊 Dashboard</a>
+                <a href="/views/accountant/pending-admissions.html" class="sidebar-item">📝 Pending Admissions</a>
+                <a href="/views/accountant/payment-schemes.html" class="sidebar-item">💳 Payment Schemes</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div style="margin-bottom: 2rem;">
+                <h1 style="font-size: 2rem; color: #1f2937;">Accountant Dashboard</h1>
+                <p style="color: #6b7280;">Manage payments and financial records</p>
+            </div>
+
+            <!-- Statistics -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalPayments">0</div>
+                    <div class="stat-label">Total Payment Records</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="pendingPayments">0</div>
+                    <div class="stat-label">Pending Payments</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="paidPayments">0</div>
+                    <div class="stat-label">Paid</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">₱<span id="totalCollected">0</span></div>
+                    <div class="stat-label">Total Collected</div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+                <h3>Quick Actions</h3>
+                <div class="actions-grid">
+                    <a href="/views/accountant/pending-admissions.html" class="btn btn-primary">
+                        View Pending Admissions
+                    </a>
+                    <a href="/views/accountant/payment-schemes.html" class="btn btn-primary">
+                        Manage Payment Schemes
+                    </a>
+                    <button onclick="logout()" class="btn btn-secondary">
+                        Logout
+                    </button>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="card">
+                <h3>System Information</h3>
+                <p style="color: #6b7280; line-height: 1.6;">
+                    Welcome to the Accountant Portal. Here you can manage payment records, 
+                    create payment schemes, and process approved applications for enrollment.
+                </p>
+                <p style="color: #6b7280; line-height: 1.6; margin-top: 1rem;">
+                    <strong>User:</strong> <span id="userName">Loading...</span><br>
+                    <strong>Role:</strong> <span id="userRole">Accountant</span>
+                </p>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+        if (!token) {
+            window.location.href = '/views/public/login.html';
+        }
+
+        // Display user info
+        document.getElementById('userName').textContent = user.fullName || 'User';
+
+        // Fetch statistics
+        async function loadStatistics() {
+            try {
+                const response = await fetch('http://localhost:3000/api/payments/statistics', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    const stats = data.statistics;
+                    document.getElementById('totalPayments').textContent = stats.total || 0;
+                    document.getElementById('pendingPayments').textContent = stats.pending || 0;
+                    document.getElementById('paidPayments').textContent = stats.paid || 0;
+                    document.getElementById('totalCollected').textContent = 
+                        (stats.total_collected || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 });
+                }
+            } catch (error) {
+                console.error('Failed to fetch statistics:', error);
+            }
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = '/views/public/login.html';
+        }
+
+        loadStatistics();
+    </script>
+</body>
+</html>

@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sections Management - MSEFC</title>
+
+  <link rel="stylesheet" href="/public/components/css/section-styles.css"/>
+
+  <style>
+    :root{
+      --sidebar-w: 260px;
+      --maroon-1:#7d1414;
+      --maroon-2:#9a3232;
+      --page-bg:#f5f5f5;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--page-bg);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .dashboard {
+      display: flex;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Fixed sidebar - always visible on desktop */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      width: var(--sidebar-w);
+      background: linear-gradient(180deg, var(--maroon-1), var(--maroon-2));
+      color: #fff;
+      overflow-y: auto;
+      z-index: 100;
+    }
+
+    /* Content always has left margin for sidebar */
+    .main-content {
+      flex: 1;
+      margin-left: var(--sidebar-w);
+      background-color: #f5f5f5;
+      padding: 40px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    /* Mobile: sidebar becomes overlay */
+    @media (max-width: 991.98px) {
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+      }
+      
+      .sidebar.mobile-open {
+        transform: translateX(0);
+      }
+      
+      .main-content {
+        margin-left: 0;
+        padding: 16px;
+      }
+      
+      .sidebar-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 90;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+      }
+      
+      .sidebar-backdrop.show {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      
+      .mobile-toggle {
+        display: block !important;
+      }
+    }
+
+    /* Hide mobile toggle on desktop */
+    .mobile-toggle {
+      display: none;
+      height: 36px;
+      width: 36px;
+      border: 0;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #f1f1f1;
+      font-size: 18px;
+      margin-bottom: 16px;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.show {
+      display: flex !important;
+    }
+
+    .modal-overlay.active {
+      display: flex !important;
+    }
+
+    /* Header */
+    .header {
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      color: #7d1414;
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .header-subtitle {
+      color: #666;
+      font-size: 14px;
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 12px 24px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #7d1414 0%, #9a3232 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #9a3232 0%, #b84545 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(125, 20, 20, 0.3);
+    }
+
+    .btn-secondary {
+      background: #6b7280;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #4b5563;
+    }
+
+    /* Filter Tabs */
+    .filter-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      flex-wrap: wrap;
+    }
+
+    .tab {
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      border: 2px solid transparent;
+      transition: all 0.3s;
+      background: white;
+      color: #333;
+    }
+
+    .tab:hover {
+      background: #f5f5f5;
+    }
+
+    .tab.active {
+      background: linear-gradient(135deg, #7d1414 0%, #9a3232 100%);
+      color: white;
+    }
+
+    /* Sections Grid */
+    .sections-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 20px;
+      flex: 1;
+      overflow-y: auto;
+      padding-bottom: 20px;
+    }
+
+    .section-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s;
+      display: flex;
+      flex-direction: column;
+      min-height: 400px;
+    }
+
+    .section-card:hover {
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    .section-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 15px;
+    }
+
+    .section-card-header h3 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #2c3e50;
+      flex: 1;
+    }
+
+    .section-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 6px;
+      transition: background 0.2s;
+      font-size: 18px;
+      color: #666;
+    }
+
+    .icon-btn:hover {
+      background: #f0f0f0;
+      color: #7d1414;
+    }
+
+    .section-card-body {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+    }
+
+    .section-card-body p {
+      font-size: 14px;
+      color: #555;
+      margin: 0;
+    }
+
+    .section-card-body strong {
+      color: #333;
+      font-weight: 600;
+    }
+
+    .section-card-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: auto;
+      padding-top: 15px;
+      border-top: 1px solid #eee;
+    }
+
+    .manage-btn {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      transition: all 0.2s;
+      background: linear-gradient(135deg, #7d1414 0%, #9a3232 100%);
+      color: white;
+      text-decoration: none;
+    }
+
+    .manage-btn:hover {
+      background: linear-gradient(135deg, #9a3232 0%, #b84545 100%);
+    }
+
+    .promote-btn {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      background: #6b7280;
+      color: white;
+      transition: all 0.2s;
+    }
+
+    .promote-btn:hover:not(:disabled) {
+      background: #4b5563;
+    }
+
+    .promote-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .modal {
+      background: white;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .modal-header {
+      background: linear-gradient(135deg, #7d1414 0%, #9a3232 100%);
+      color: white;
+      padding: 24px;
+      border-radius: 16px 16px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .close-modal {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 28px;
+      cursor: pointer;
+      line-height: 1;
+      transition: transform 0.2s;
+      padding: 0;
+    }
+
+    .close-modal:hover {
+      transform: scale(1.1);
+    }
+
+    .modal-body {
+      padding: 24px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #444;
+      font-size: 14px;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #7d1414;
+      box-shadow: 0 0 0 3px rgba(125, 20, 20, 0.1);
+    }
+
+    .student-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+
+    .student-item:hover {
+      background: #f9f9f9;
+    }
+
+    .student-list {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+
+  <link rel="stylesheet" href="/public/components/css/sidebar-styles.css"/>
+</head>
+<body>
+  <div class="dashboard">
+    <aside id="sidebar" class="sidebar" aria-hidden="false">
+      <div style="padding:16px 12px; opacity:.8;">Loading menu…</div>
+    </aside>
+    <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+
+    <main class="main-content">
+      <!-- Mobile toggle only -->
+      <button id="mobileToggle" class="mobile-toggle" aria-label="Toggle menu">☰</button>
+
+      <!-- Page Header -->
+      <div class="header">
+        <h1>Sections Management</h1>
+        <p class="header-subtitle">
+          Manage school sections, assign students, and configure subjects
+        </p>
+      </div>
+
+      <!-- Filter Tabs -->
+      <div class="filter-tabs">
+        <div class="tab active" onclick="filterSections('all')">All Sections</div>
+        <div class="tab" onclick="filterSections('7')">Grade 7</div>
+        <div class="tab" onclick="filterSections('8')">Grade 8</div>
+        <div class="tab" onclick="filterSections('9')">Grade 9</div>
+        <div class="tab" onclick="filterSections('10')">Grade 10</div>
+        <div class="tab" onclick="filterSections('11')">Grade 11</div>
+        <div class="tab" onclick="filterSections('12')">Grade 12</div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div style="display:flex; gap:10px; margin-bottom:20px;">
+        <button onclick="openSuccessionModal()" class="btn btn-secondary">🔄 Manage Section Succession</button>
+        <button onclick="openAddSectionModal()" class="btn btn-primary">➕ Add Section</button>
+      </div>
+
+      <!-- Sections Grid -->
+      <div class="sections-grid" id="sectionsGrid">
+        <div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #666;">
+          <h3>Loading sections...</h3>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- All your existing modals here -->
+  <div class="modal-overlay" id="sectionModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="sectionModalTitle">Add New Section</h2>
+        <button class="close-modal" onclick="closeModal('sectionModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="sectionForm" onsubmit="event.preventDefault(); saveSection();">
+          <div class="form-group">
+            <label>Section Name <span style="color: red;">*</span></label>
+            <input type="text" id="sectionName" required placeholder="e.g., Charity, Hope">
+          </div>
+          <div class="form-group">
+            <label>School Level <span style="color: red;">*</span></label>
+            <select id="schoolLevel" required>
+              <option value="">Select Level</option>
+              <option value="JHS">Junior High School</option>
+              <option value="SHS">Senior High School</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Grade Level <span style="color: red;">*</span></label>
+            <select id="gradeLevel" required>
+              <option value="">Select Grade</option>
+              <option value="7">Grade 7</option>
+              <option value="8">Grade 8</option>
+              <option value="9">Grade 9</option>
+              <option value="10">Grade 10</option>
+              <option value="11">Grade 11</option>
+              <option value="12">Grade 12</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Maximum Capacity</label>
+            <input type="number" id="maxCapacity" value="40" min="1">
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%;">Save Section</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add all other modals from your original file here -->
+  <!-- manageStudentsModal, successionModal, enrolledStudentsModal -->
+
+  <script>
+    // Mobile-only sidebar toggle
+    (function(){
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('sidebarBackdrop');
+      const mobileToggle = document.getElementById('mobileToggle');
+
+      function isMobile() {
+        return window.matchMedia('(max-width: 991.98px)').matches;
+      }
+
+      function toggleMobileSidebar() {
+        if (!isMobile()) return;
+        
+        const isOpen = sidebar.classList.contains('mobile-open');
+        if (isOpen) {
+          sidebar.classList.remove('mobile-open');
+          backdrop.classList.remove('show');
+        } else {
+          sidebar.classList.add('mobile-open');
+          backdrop.classList.add('show');
+        }
+      }
+
+      function closeMobileSidebar() {
+        sidebar.classList.remove('mobile-open');
+        backdrop.classList.remove('show');
+      }
+
+      mobileToggle?.addEventListener('click', toggleMobileSidebar);
+      backdrop?.addEventListener('click', closeMobileSidebar);
+
+      // Clean up on resize
+      window.addEventListener('resize', () => {
+        if (!isMobile()) {
+          closeMobileSidebar();
+        }
+      });
+    })();
+  </script>
+
+  <script src="/public/components/js/sidebar-injector.js"></script>
+  <script src="/public/components/js/sections.js"></script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f3f4f6; }
+        .dashboard { display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background: white; box-shadow: 2px 0 10px rgba(0,0,0,0.1); position: fixed; height: 100vh; }
+        .sidebar-header { padding: 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-align: center; }
+        .sidebar-menu { padding: 1.5rem; }
+        .sidebar-item { display: block; padding: 1rem; margin-bottom: 0.5rem; border-radius: 0.5rem; color: #374151; text-decoration: none; }
+        .sidebar-item.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .main-content { margin-left: 260px; flex: 1; padding: 2rem; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat-card { background: white; padding: 1.5rem; border-radius: 0.75rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .stat-value { font-size: 2.5rem; font-weight: 700; color: #1f2937; }
+        .stat-label { font-size: 0.875rem; color: #6b7280; text-transform: uppercase; }
+        .btn { padding: 0.75rem 1.5rem; border-radius: 0.5rem; border: none; cursor: pointer; font-weight: 500; text-decoration: none; display: inline-block; }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-danger { background: #ef4444; color: white; width: 100%; margin-top: 1rem; }
+        .card { background: white; padding: 2rem; border-radius: 0.75rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>🎓 Enrollment System</h2>
+                <p>Registrar Portal</p>
+            </div>
+            <nav class="sidebar-menu">
+                <a href="/views/registrar/dashboard.html" class="sidebar-item active">📊 Dashboard</a>
+                <a href="/views/registrar/admission-management.html" class="sidebar-item">📝 Admissions</a>
+            </nav>
+            <div style="padding: 1rem; margin: 1rem; background: #f9fafb; border-radius: 0.5rem;">
+                <strong id="userName">Loading...</strong>
+                <p style="font-size: 0.875rem; color: #6b7280;" id="userRole"></p>
+                <button onclick="logout()" class="btn btn-danger">Logout</button>
+            </div>
+        </aside>
+        <main class="main-content">
+            <h1 style="font-size: 2rem; margin-bottom: 2rem;">Dashboard</h1>
+            <div class="stats-grid">
+                <div class="stat-card"><div class="stat-value" id="totalApps">0</div><div class="stat-label">Total</div></div>
+                <div class="stat-card"><div class="stat-value" id="pending">0</div><div class="stat-label">Pending</div></div>
+                <div class="stat-card"><div class="stat-value" id="approved">0</div><div class="stat-label">Approved</div></div>
+                <div class="stat-card"><div class="stat-value" id="rejected">0</div><div class="stat-label">Rejected</div></div>
+            </div>
+            <div class="card">
+                <h3 style="margin-bottom: 1rem;">Quick Actions</h3>
+                <a href="/views/public/admission.html" class="btn btn-primary" target="_blank">Open Application Form</a>
+            </div>
+        </main>
+    </div>
+    <script>
+        const token = localStorage.getItem('token');
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (!token) { window.location.href = '/views/public/login.html'; }
+        document.getElementById('userName').textContent = user.fullName || 'User';
+        document.getElementById('userRole').textContent = user.role ? user.role.replace('_', ' ').toUpperCase() : '';
+        
+        fetch('http://localhost:3000/api/admission/statistics', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        }).then(r => r.json()).then(data => {
+            if (data.success) {
+                document.getElementById('totalApps').textContent = data.statistics.total || 0;
+                document.getElementById('pending').textContent = data.statistics.pending || 0;
+                document.getElementById('approved').textContent = data.statistics.approved || 0;
+                document.getElementById('rejected').textContent = data.statistics.rejected || 0;
+            }
+        }).catch(e => console.error(e));
+        
+        function logout() {
+            localStorage.clear();
+            window.location.href = '/views/public/login.html';
+        }
+    </script>
+</body>
+</html>

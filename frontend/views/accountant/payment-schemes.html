@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Schemes - Accountant</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f3f4f6; }
+        .dashboard { display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background: white; box-shadow: 2px 0 10px rgba(0,0,0,0.1); position: fixed; height: 100vh; overflow-y: auto; }
+        .sidebar-header { padding: 2rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; text-align: center; }
+        .sidebar-menu { padding: 1.5rem; }
+        .sidebar-item { display: block; padding: 1rem; margin-bottom: 0.5rem; border-radius: 0.5rem; color: #374151; text-decoration: none; }
+        .sidebar-item:hover { background: #d1fae5; color: #10b981; }
+        .sidebar-item.active { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; }
+        .main-content { margin-left: 260px; flex: 1; padding: 2rem; }
+        .page-header { margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .table-container { background: white; border-radius: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow: hidden; }
+        .table { width: 100%; border-collapse: collapse; }
+        .table thead { background: #f9fafb; }
+        .table th { padding: 1rem; text-align: left; font-weight: 600; color: #374151; font-size: 0.875rem; border-bottom: 2px solid #e5e7eb; }
+        .table td { padding: 1rem; border-bottom: 1px solid #e5e7eb; font-size: 0.875rem; }
+        .table tbody tr:hover { background: #f9fafb; }
+        .badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+        .badge-jhs { background: #dbeafe; color: #1e40af; }
+        .badge-shs { background: #e0e7ff; color: #5b21b6; }
+        .btn { padding: 0.5rem 1rem; border-radius: 0.375rem; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 500; }
+        .btn-primary { background: #10b981; color: white; }
+        .btn-sm { padding: 0.375rem 0.75rem; font-size: 0.75rem; }
+        .btn:hover { opacity: 0.9; }
+        .loading { text-align: center; padding: 3rem; color: #6b7280; }
+        .empty-state { text-align: center; padding: 3rem; color: #6b7280; }
+        .hidden { display: none; }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 9999; overflow-y: auto; display: none; }
+        .modal { background: white; max-width: 600px; margin: 2rem auto; border-radius: 1rem; box-shadow: 0 20px 25px rgba(0,0,0,0.15); }
+        .modal-header { padding: 2rem; border-bottom: 1px solid #e5e7eb; }
+        .modal-title { font-size: 1.5rem; color: #1f2937; }
+        .modal-body { padding: 2rem; }
+        .modal-footer { padding: 1.5rem; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 1rem; }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; color: #374151; font-weight: 500; }
+        .form-group input, .form-group select { width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-size: 1rem; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: #10b981; }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>💰 Enrollment System</h2>
+                <p>Accountant Portal</p>
+            </div>
+            <nav class="sidebar-menu">
+                <a href="/views/accountant/dashboard.html" class="sidebar-item">📊 Dashboard</a>
+                <a href="/views/accountant/pending-admissions.html" class="sidebar-item">📝 Pending Admissions</a>
+                <a href="/views/accountant/payment-schemes.html" class="sidebar-item active">💳 Payment Schemes</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="page-header">
+                <div>
+                    <h1 style="font-size: 2rem; color: #1f2937;">Payment Schemes</h1>
+                    <p style="color: #6b7280;">Manage payment schemes for all grades</p>
+                </div>
+                <button onclick="openCreateModal()" class="btn btn-primary">+ New Scheme</button>
+            </div>
+
+            <div class="table-container">
+                <div id="loading" class="loading">Loading schemes...</div>
+                <div id="emptyState" class="empty-state hidden">No payment schemes found</div>
+                <table class="table" id="schemesTable" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>Scheme Name</th>
+                            <th>Level</th>
+                            <th>Grade</th>
+                            <th>Total Amount</th>
+                            <th>Installments</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Create/Edit Modal -->
+    <div id="schemeModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Create Payment Scheme</h2>
+            </div>
+            <div class="modal-body">
+                <form id="schemeForm">
+                    <div class="form-group">
+                        <label>Scheme Name <span style="color: red;">*</span></label>
+                        <input type="text" id="schemeName" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>School Level <span style="color: red;">*</span></label>
+                        <select id="schoolLevel" required>
+                            <option value="">Select Level</option>
+                            <option value="JHS">Junior High School</option>
+                            <option value="SHS">Senior High School</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Grade Level <span style="color: red;">*</span></label>
+                        <select id="gradeLevel" required>
+                            <option value="">Select Grade</option>
+                            <option value="7">Grade 7</option>
+                            <option value="8">Grade 8</option>
+                            <option value="9">Grade 9</option>
+                            <option value="10">Grade 10</option>
+                            <option value="11">Grade 11</option>
+                            <option value="12">Grade 12</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Total Amount <span style="color: red;">*</span></label>
+                        <input type="number" id="totalAmount" step="0.01" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Number of Installments <span style="color: red;">*</span></label>
+                        <input type="number" id="installmentCount" value="1" min="1" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeModal()" class="btn" style="background: #6b7280; color: white;">Cancel</button>
+                <button onclick="submitScheme()" class="btn btn-primary">Save Scheme</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = '/views/public/login.html';
+
+        async function loadSchemes() {
+            document.getElementById('loading').style.display = 'block';
+            try {
+                const response = await fetch('http://localhost:3000/api/payments/schemes', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+
+                const data = await response.json();
+                document.getElementById('loading').style.display = 'none';
+
+                if (response.ok && data.success) {
+                    displaySchemes(data.schemes);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('loading').style.display = 'none';
+                alert('Connection error');
+            }
+        }
+
+        function displaySchemes(schemes) {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            if (schemes.length === 0) {
+                document.getElementById('emptyState').classList.remove('hidden');
+                document.getElementById('schemesTable').style.display = 'none';
+                return;
+            }
+
+            schemes.forEach(scheme => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${scheme.scheme_name}</strong></td>
+                    <td><span class="badge badge-${scheme.school_level.toLowerCase()}">${scheme.school_level}</span></td>
+                    <td>Grade ${scheme.grade_level}</td>
+                    <td>₱${parseFloat(scheme.total_amount).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</td>
+                    <td>${scheme.installment_count}</td>
+                    <td><span class="badge" style="background: #d1fae5; color: #065f46;">Active</span></td>
+                    <td>
+                        <button onclick="editScheme(${scheme.scheme_id})" class="btn btn-primary btn-sm">Edit</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            document.getElementById('schemesTable').style.display = 'table';
+        }
+
+        function openCreateModal() {
+            document.getElementById('modalTitle').textContent = 'Create Payment Scheme';
+            document.getElementById('schemeForm').reset();
+            document.getElementById('schemeModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('schemeModal').style.display = 'none';
+        }
+
+        async function submitScheme() {
+            const schemeName = document.getElementById('schemeName').value;
+            const schoolLevel = document.getElementById('schoolLevel').value;
+            const gradeLevel = document.getElementById('gradeLevel').value;
+            const totalAmount = document.getElementById('totalAmount').value;
+            const installmentCount = document.getElementById('installmentCount').value;
+
+            try {
+                const response = await fetch('http://localhost:3000/api/payments/schemes', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        schemeName, schoolLevel, gradeLevel, totalAmount, installmentCount
+                    })
+                });
+
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    alert('Scheme saved successfully!');
+                    closeModal();
+                    loadSchemes();
+                } else {
+                    alert(data.message || 'Failed to save scheme');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Connection error');
+            }
+        }
+
+        document.getElementById('schemeModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        loadSchemes();
+    </script>
+</body>
+</html>
