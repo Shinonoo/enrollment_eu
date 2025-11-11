@@ -1,69 +1,76 @@
-const db = require('../config/database');
-const { validationResult } = require('express-validator');
+// controllers/admissionController.js - COMPLETE
 
-// Submit new admission application (public - no auth required)
+const AdmissionModel = require('../models/admissionModel');
+
+// ============================================
+// 1. Submit Application (PUBLIC)
+// ============================================
+
 const submitApplication = async (req, res) => {
     try {
         const {
-            firstName, middleName, lastName, suffix,
-            dateOfBirth, gender,
-            email, phoneNumber,
-            addressLine1, addressLine2, city, province, zipCode,
-            guardianName, guardianRelationship, guardianPhone, guardianEmail,
-            schoolLevel, gradeLevel, previousSchool, strand,
-            applicationType
+            first_name, middle_name, last_name, suffix,
+            date_of_birth, gender,
+            email, phone_number,
+            street, barangay, city, province, zip_code,
+            guardian_name, guardian_relationship, guardian_phone, guardian_email,
+            school_level, grade_level, previous_school, strand,
+            application_type
         } = req.body;
 
-        // Basic validation
-        if (!firstName || !lastName || !dateOfBirth || !gender) {
+        // Validate
+        if (!first_name || !last_name || !date_of_birth || !gender) {
             return res.status(400).json({
                 error: 'Validation failed',
                 message: 'Required fields: First Name, Last Name, Date of Birth, Gender'
             });
         }
 
-        if (!addressLine1 || !city || !province) {
+        if (!street || !city || !province) {
             return res.status(400).json({
                 error: 'Validation failed',
-                message: 'Address fields are required'
+                message: 'Address fields (Street, City, Province) are required'
             });
         }
 
-        if (!guardianName || !guardianRelationship || !guardianPhone) {
+        if (!guardian_name || !guardian_relationship || !guardian_phone) {
             return res.status(400).json({
                 error: 'Validation failed',
                 message: 'Guardian information is required'
             });
         }
 
-        if (!schoolLevel || !gradeLevel || !applicationType) {
+        if (!school_level || !grade_level || !application_type) {
             return res.status(400).json({
                 error: 'Validation failed',
                 message: 'School Level, Grade Level, and Application Type are required'
             });
         }
 
-        // Insert into database
-        const [result] = await db.query(
-            `INSERT INTO admission_applications (
-                first_name, middle_name, last_name, suffix,
-                date_of_birth, gender,
-                email, phone_number,
-                address_line1, address_line2, city, province, zip_code,
-                guardian_name, guardian_relationship, guardian_phone, guardian_email,
-                school_level, grade_level, previous_school, strand,
-                application_type, status
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [
-                firstName, middleName || null, lastName, suffix || null,
-                dateOfBirth, gender,
-                email || null, phoneNumber || null,
-                addressLine1, addressLine2 || null, city, province, zipCode || null,
-                guardianName, guardianRelationship, guardianPhone, guardianEmail || null,
-                schoolLevel, gradeLevel, previousSchool || null, strand || null,
-                applicationType, 'pending'
-            ]
-        );
+        const result = await AdmissionModel.createAdmission({
+            firstName: first_name,
+            middleName: middle_name,
+            lastName: last_name,
+            suffix: suffix,
+            dateOfBirth: date_of_birth,
+            gender: gender,
+            email: email,
+            phoneNumber: phone_number,
+            street: street,
+            barangay: barangay,
+            city: city,
+            province: province,
+            zipCode: zip_code,
+            guardianName: guardian_name,
+            guardianRelationship: guardian_relationship,
+            guardianPhone: guardian_phone,
+            guardianEmail: guardian_email,
+            schoolLevel: school_level,
+            gradeLevel: grade_level,
+            previousSchool: previous_school,
+            strand: strand,
+            applicationType: application_type
+        });
 
         res.status(201).json({
             success: true,
@@ -82,38 +89,17 @@ const submitApplication = async (req, res) => {
     }
 };
 
-// Get all applications (for registrar) - FIXED: Removed duplicate filter
+// ============================================
+// 2. Get All Applications (PROTECTED)
+// ============================================
+
 const getAllApplications = async (req, res) => {
     try {
         const { status, schoolLevel, gradeLevel, applicationType } = req.query;
 
-        // Exclude 'enrolled' applications by default (they're now students)
-        let query = `SELECT * FROM admission_applications WHERE status NOT IN ('enrolled', 'completed', 'dropped')`;
-        const params = [];
-
-        if (status) {
-            query += ' AND status = ?';
-            params.push(status);
-        }
-
-        if (schoolLevel) {
-            query += ' AND school_level = ?';
-            params.push(schoolLevel);
-        }
-
-        if (gradeLevel) {
-            query += ' AND grade_level = ?';
-            params.push(gradeLevel);
-        }
-
-        if (applicationType) {
-            query += ' AND application_type = ?';
-            params.push(applicationType);
-        }
-
-        query += ' ORDER BY submitted_at DESC';
-
-        const [applications] = await db.query(query, params);
+        const applications = await AdmissionModel.getAllAdmissions({
+            status, schoolLevel, gradeLevel, applicationType
+        });
 
         res.json({
             success: true,
@@ -130,17 +116,16 @@ const getAllApplications = async (req, res) => {
     }
 };
 
-// Get single application by ID
+// ============================================
+// 3. Get Application by ID (PROTECTED)
+// ============================================
+
 const getApplicationById = async (req, res) => {
     try {
         const { id } = req.params;
+        const application = await AdmissionModel.getAdmissionById(id);
 
-        const [applications] = await db.query(
-            'SELECT * FROM admission_applications WHERE application_id = ?',
-            [id]
-        );
-
-        if (applications.length === 0) {
+        if (!application) {
             return res.status(404).json({
                 error: 'Not found',
                 message: 'Application not found'
@@ -149,7 +134,7 @@ const getApplicationById = async (req, res) => {
 
         res.json({
             success: true,
-            application: applications[0]
+            application
         });
 
     } catch (error) {
@@ -161,7 +146,10 @@ const getApplicationById = async (req, res) => {
     }
 };
 
-// Update application status (approve/reject)
+// ============================================
+// 4. Update Application Status (PROTECTED)
+// ============================================
+
 const updateApplicationStatus = async (req, res) => {
     try {
         const { id } = req.params;
@@ -181,27 +169,7 @@ const updateApplicationStatus = async (req, res) => {
             });
         }
 
-        // Update application
-        await db.query(
-            `UPDATE admission_applications 
-             SET status = ?, 
-                 registrar_notes = ?,
-                 rejection_reason = ?,
-                 reviewed_by_registrar = ?,
-                 reviewed_at = NOW()
-             WHERE application_id = ?`,
-            [status, registrarNotes, rejectionReason, req.user.userId, id]
-        );
-
-        // If approved, mark for accountant
-        if (status === 'approved') {
-            await db.query(
-                `UPDATE admission_applications 
-                 SET sent_to_accountant_at = NOW()
-                 WHERE application_id = ?`,
-                [id]
-            );
-        }
+        await AdmissionModel.updateAdmissionStatus(id, status, registrarNotes, rejectionReason, req.user?.userId);
 
         res.json({
             success: true,
@@ -217,40 +185,47 @@ const updateApplicationStatus = async (req, res) => {
     }
 };
 
-// Update application details
+// ============================================
+// 5. Update Application (PROTECTED)
+// ============================================
+
 const updateApplication = async (req, res) => {
     try {
         const { id } = req.params;
         const {
-            firstName, middleName, lastName, suffix,
-            dateOfBirth, gender,
-            email, phoneNumber,
-            addressLine1, addressLine2, city, province, zipCode,
-            guardianName, guardianRelationship, guardianPhone, guardianEmail,
-            schoolLevel, gradeLevel, previousSchool, strand,
-            applicationType
+            first_name, middle_name, last_name, suffix,
+            date_of_birth, gender,
+            email, phone_number,
+            street, barangay, city, province, zip_code,
+            guardian_name, guardian_relationship, guardian_phone, guardian_email,
+            school_level, grade_level, previous_school, strand,
+            application_type
         } = req.body;
 
-        await db.query(
-            `UPDATE admission_applications SET
-                first_name = ?, middle_name = ?, last_name = ?, suffix = ?,
-                date_of_birth = ?, gender = ?,
-                email = ?, phone_number = ?,
-                address_line1 = ?, address_line2 = ?, city = ?, province = ?, zip_code = ?,
-                guardian_name = ?, guardian_relationship = ?, guardian_phone = ?, guardian_email = ?,
-                school_level = ?, grade_level = ?, previous_school = ?, strand = ?,
-                application_type = ?
-             WHERE application_id = ?`,
-            [
-                firstName, middleName, lastName, suffix,
-                dateOfBirth, gender,
-                email, phoneNumber,
-                addressLine1, addressLine2, city, province, zipCode,
-                guardianName, guardianRelationship, guardianPhone, guardianEmail,
-                schoolLevel, gradeLevel, previousSchool, strand,
-                applicationType, id
-            ]
-        );
+        await AdmissionModel.updateApplication(id, {
+            firstName: first_name,
+            middleName: middle_name,
+            lastName: last_name,
+            suffix: suffix,
+            dateOfBirth: date_of_birth,
+            gender: gender,
+            email: email,
+            phoneNumber: phone_number,
+            street: street,
+            barangay: barangay,
+            city: city,
+            province: province,
+            zipCode: zip_code,
+            guardianName: guardian_name,
+            guardianRelationship: guardian_relationship,
+            guardianPhone: guardian_phone,
+            guardianEmail: guardian_email,
+            schoolLevel: school_level,
+            gradeLevel: grade_level,
+            previousSchool: previous_school,
+            strand: strand,
+            applicationType: application_type
+        });
 
         res.json({
             success: true,
@@ -266,24 +241,17 @@ const updateApplication = async (req, res) => {
     }
 };
 
-// Get statistics
+// ============================================
+// 6. Get Statistics (PROTECTED)
+// ============================================
+
 const getStatistics = async (req, res) => {
     try {
-        const [stats] = await db.query(`
-            SELECT 
-                COUNT(*) as total,
-                SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
-                SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) as approved,
-                SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) as rejected,
-                SUM(CASE WHEN school_level = 'JHS' THEN 1 ELSE 0 END) as jhs,
-                SUM(CASE WHEN school_level = 'SHS' THEN 1 ELSE 0 END) as shs
-            FROM admission_applications
-            WHERE status NOT IN ('enrolled', 'completed', 'dropped')
-        `);
+        const statistics = await AdmissionModel.getStatistics();
 
         res.json({
             success: true,
-            statistics: stats[0]
+            statistics
         });
 
     } catch (error) {
@@ -295,7 +263,10 @@ const getStatistics = async (req, res) => {
     }
 };
 
-// Send approved applications to accountant
+// ============================================
+// 7. Send to Accountant (PROTECTED)
+// ============================================
+
 const sendToAccountant = async (req, res) => {
     try {
         const { applicationIds } = req.body;
@@ -307,12 +278,7 @@ const sendToAccountant = async (req, res) => {
             });
         }
 
-        await db.query(
-            `UPDATE admission_applications 
-             SET sent_to_accountant_at = NOW()
-             WHERE application_id IN (?) AND status = 'approved'`,
-            [applicationIds]
-        );
+        await AdmissionModel.sendToAccountant(applicationIds);
 
         res.json({
             success: true,
@@ -327,6 +293,10 @@ const sendToAccountant = async (req, res) => {
         });
     }
 };
+
+// ============================================
+// EXPORTS
+// ============================================
 
 module.exports = {
     submitApplication,

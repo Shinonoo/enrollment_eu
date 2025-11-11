@@ -1,202 +1,138 @@
-const db = require('../config/database');
+// controllers/curriculumController.js - ONLY logic & responses
+const CurriculumModel = require('../models/curriculumModel');
 
-// Get all curricula with subject count
-exports.getAllCurricula = (req, res) => {
-  const query = `
-    SELECT 
-      c.*,
-      COUNT(cs.curriculum_subject_id) as subject_count
-    FROM curricula c
-    LEFT JOIN curriculum_subjects cs ON c.curriculum_id = cs.curriculum_id
-    GROUP BY c.curriculum_id
-    ORDER BY c.school_level, c.grade_level, c.curriculum_name
-  `;
-  
-  db.query(query, (err, curricula) => {
-    if (err) return res.status(500).send(err);
-    res.render('curriculum/index', { curricula });
-  });
-};
-
-// Get create page
-exports.getCreatePage = (req, res) => {
-  const query = `SELECT * FROM subjects WHERE is_active = 1 ORDER BY school_level, grade_level, subject_name`;
-  
-  db.query(query, (err, subjects) => {
-    if (err) return res.status(500).send(err);
-    res.render('curriculum/create', { subjects });
-  });
-};
-
-// Create curriculum
-exports.createCurriculum = (req, res) => {
-  const { curriculum_code, curriculum_name, school_level, grade_level, strand, description, subjects } = req.body;
-  
-  const curriculumQuery = `
-    INSERT INTO curricula (curriculum_code, curriculum_name, school_level, grade_level, strand, description)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `;
-  
-  db.query(curriculumQuery, [curriculum_code, curriculum_name, school_level, grade_level, strand || null, description], (err, result) => {
-    if (err) {
-      if (err.code === 'ER_DUP_ENTRY') {
-        return res.status(400).render('curriculum/create', { error: 'Curriculum code already exists', subjects: [] });
-      }
-      return res.status(500).send(err);
+exports.getAllCurricula = async (req, res) => {
+    try {
+        const curricula = await CurriculumModel.getAllCurricula();
+        res.json({ curricula });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ error: error.message });
     }
-    
-    const curriculum_id = result.insertId;
-    
-    // Add subjects if provided
-    if (subjects && subjects.length > 0) {
-      const subjectInserts = subjects.map(subject_id => [curriculum_id, subject_id, 'Both', 1]);
-      const insertSubjectsQuery = `INSERT INTO curriculum_subjects (curriculum_id, subject_id, semester, is_required) VALUES ?`;
-      
-      db.query(insertSubjectsQuery, [subjectInserts], (err) => {
-        if (err) return res.status(500).send(err);
-        res.redirect('/curriculum');
-      });
-    } else {
-      res.redirect('/curriculum');
-    }
-  });
 };
 
-// Get curriculum detail
-exports.getCurriculumDetail = (req, res) => {
-  const { curriculum_id } = req.params;
-  
-  const curriculumQuery = `SELECT * FROM curricula WHERE curriculum_id = ?`;
-  const subjectsQuery = `
-    SELECT 
-      cs.*,
-      s.subject_code,
-      s.subject_name,
-      s.units
-    FROM curriculum_subjects cs
-    JOIN subjects s ON cs.subject_id = s.subject_id
-    WHERE cs.curriculum_id = ?
-    ORDER BY s.subject_name
-  `;
-  
-  db.query(curriculumQuery, [curriculum_id], (err, curriculum) => {
-    if (err) return res.status(500).send(err);
-    if (curriculum.length === 0) return res.status(404).send('Curriculum not found');
-    
-    db.query(subjectsQuery, [curriculum_id], (err, subjects) => {
-      if (err) return res.status(500).send(err);
-      res.render('curriculum/detail', { curriculum: curriculum[0], subjects });
-    });
-  });
-};
+exports.createCurriculum = async (req, res) => {
+    try {
+        const { curriculum_code, curriculum_name, school_level, grade_level, strand, description, subjects } = req.body;
 
-// Get edit page
-exports.getEditPage = (req, res) => {
-  const { curriculum_id } = req.params;
-  
-  const curriculumQuery = `SELECT * FROM curricula WHERE curriculum_id = ?`;
-  const assignedSubjectsQuery = `
-    SELECT subject_id FROM curriculum_subjects WHERE curriculum_id = ?
-  `;
-  const allSubjectsQuery = `SELECT * FROM subjects WHERE is_active = 1 ORDER BY school_level, grade_level, subject_name`;
-  
-  db.query(curriculumQuery, [curriculum_id], (err, curriculum) => {
-    if (err) return res.status(500).send(err);
-    if (curriculum.length === 0) return res.status(404).send('Curriculum not found');
-    
-    db.query(assignedSubjectsQuery, [curriculum_id], (err, assigned) => {
-      if (err) return res.status(500).send(err);
-      
-      db.query(allSubjectsQuery, (err, subjects) => {
-        if (err) return res.status(500).send(err);
-        
-        const assignedIds = assigned.map(a => a.subject_id);
-        res.render('curriculum/edit', { 
-          curriculum: curriculum[0], 
-          subjects, 
-          assignedIds 
+        const result = await CurriculumModel.createCurriculum({
+            curriculum_code,
+            curriculum_name,
+            school_level,
+            grade_level,
+            strand,
+            description
         });
-      });
-    });
-  });
-};
 
-// Update curriculum
-exports.updateCurriculum = (req, res) => {
-  const { curriculum_id } = req.params;
-  const { curriculum_code, curriculum_name, school_level, grade_level, strand, description } = req.body;
-  
-  const query = `
-    UPDATE curricula 
-    SET curriculum_code = ?, curriculum_name = ?, school_level = ?, 
-        grade_level = ?, strand = ?, description = ?
-    WHERE curriculum_id = ?
-  `;
-  
-  db.query(query, [curriculum_code, curriculum_name, school_level, grade_level, strand || null, description, curriculum_id], (err) => {
-    if (err) {
-      if (err.code === 'ER_DUP_ENTRY') {
-        return res.status(400).send('Curriculum code already exists');
-      }
-      return res.status(500).send(err);
+        const curriculum_id = result.insertId;
+
+        if (subjects && subjects.length > 0) {
+            await CurriculumModel.addSubjectsToCurriculum(curriculum_id, subjects);
+        }
+
+        res.json({ success: true, curriculum_id });
+    } catch (error) {
+        console.error('Error:', error);
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(400).json({ error: 'Curriculum code already exists' });
+        }
+        res.status(500).json({ error: error.message });
     }
-    res.redirect(`/curriculum/${curriculum_id}`);
-  });
 };
 
-// Delete curriculum
-exports.deleteCurriculum = (req, res) => {
-  const { curriculum_id } = req.params;
-  
-  const query = `DELETE FROM curricula WHERE curriculum_id = ?`;
-  
-  db.query(query, [curriculum_id], (err) => {
-    if (err) return res.status(500).send(err);
-    res.redirect('/curriculum');
-  });
-};
+exports.getCurriculumDetail = async (req, res) => {
+    try {
+        const { curriculum_id } = req.params;
 
-// Toggle active status
-exports.toggleStatus = (req, res) => {
-  const { curriculum_id } = req.params;
-  
-  const query = `UPDATE curricula SET is_active = NOT is_active WHERE curriculum_id = ?`;
-  
-  db.query(query, [curriculum_id], (err) => {
-    if (err) return res.status(500).send(err);
-    res.redirect('/curriculum');
-  });
-};
+        const curriculum = await CurriculumModel.getCurriculumDetail(curriculum_id);
 
-// Add subject to curriculum
-exports.addSubjectToCurriculum = (req, res) => {
-  const { curriculum_id } = req.params;
-  const { subject_id, semester, is_required } = req.body;
-  
-  const query = `
-    INSERT INTO curriculum_subjects (curriculum_id, subject_id, semester, is_required)
-    VALUES (?, ?, ?, ?)
-  `;
-  
-  db.query(query, [curriculum_id, subject_id, semester || 'Both', is_required || 1], (err) => {
-    if (err) {
-      if (err.code === 'ER_DUP_ENTRY') {
-        return res.status(400).json({ error: 'Subject already in curriculum' });
-      }
-      return res.status(500).json({ error: err.message });
+        if (!curriculum) {
+            return res.status(404).json({ error: 'Curriculum not found' });
+        }
+
+        const subjects = await CurriculumModel.getCurriculumSubjects(curriculum_id);
+
+        res.json({ curriculum, subjects });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ error: error.message });
     }
-    res.json({ success: true });
-  });
 };
 
-// Remove subject from curriculum
-exports.removeSubjectFromCurriculum = (req, res) => {
-  const { curriculum_id, subject_id } = req.params;
-  
-  const query = `DELETE FROM curriculum_subjects WHERE curriculum_id = ? AND subject_id = ?`;
-  
-  db.query(query, [curriculum_id, subject_id], (err) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ success: true });
-  });
+exports.updateCurriculum = async (req, res) => {
+    try {
+        const { curriculum_id } = req.params;
+        const { curriculum_code, curriculum_name, school_level, grade_level, strand, description, subjects } = req.body;
+
+        await CurriculumModel.updateCurriculum(curriculum_id, {
+            curriculum_code,
+            curriculum_name,
+            school_level,
+            grade_level,
+            strand,
+            description
+        });
+
+        if (subjects && subjects.length > 0) {
+            await CurriculumModel.deleteSubjectsFromCurriculum(curriculum_id);
+            await CurriculumModel.addSubjectsToCurriculum(curriculum_id, subjects);
+        }
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error:', error);
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(400).json({ error: 'Curriculum code already exists' });
+        }
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.deleteCurriculum = async (req, res) => {
+    try {
+        const { curriculum_id } = req.params;
+        await CurriculumModel.deleteCurriculum(curriculum_id);
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.toggleStatus = async (req, res) => {
+    try {
+        const { curriculum_id } = req.params;
+        await CurriculumModel.toggleStatus(curriculum_id);
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.addSubjectToCurriculum = async (req, res) => {
+    try {
+        const { curriculum_id } = req.params;
+        const { subject_id, semester, is_required } = req.body;
+
+        await CurriculumModel.addSubjectToCurriculum(curriculum_id, subject_id, semester, is_required);
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error:', error);
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(400).json({ error: 'Subject already in curriculum' });
+        }
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.removeSubjectFromCurriculum = async (req, res) => {
+    try {
+        const { curriculum_id, subject_id } = req.params;
+        await CurriculumModel.removeSubjectFromCurriculum(curriculum_id, subject_id);
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ error: error.message });
+    }
 };

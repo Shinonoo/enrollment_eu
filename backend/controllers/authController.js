@@ -1,9 +1,9 @@
+// controllers/authController.js - ONLY logic & responses
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const db = require('../config/database');
+const AuthModel = require('../models/authModel');
 require('dotenv').config();
 
-// Login user
 const login = async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -16,23 +16,15 @@ const login = async (req, res) => {
             });
         }
 
-        // Find user in database
-        const [users] = await db.query(
-            'SELECT user_id, username, password_hash, email, full_name, role, is_active FROM users WHERE username = ?',
-            [username]
-        );
+        // Get user from database
+        const user = await AuthModel.getUserByUsername(username);
 
-        console.log('Found users:', users.length); // ADD THIS
-        console.log('User data:', users[0]); // ADD THIS
-
-        if (users.length === 0) {
+        if (!user) {
             return res.status(401).json({ 
                 error: 'Authentication failed',
                 message: 'Invalid username or password' 
             });
         }
-
-        const user = users[0];
 
         // Check if user is active
         if (!user.is_active) {
@@ -53,10 +45,7 @@ const login = async (req, res) => {
         }
 
         // Update last login
-        await db.query(
-            'UPDATE users SET last_login = NOW() WHERE user_id = ?',
-            [user.user_id]
-        );
+        await AuthModel.updateLastLogin(user.user_id);
 
         // Generate JWT token
         const token = jwt.sign(
@@ -93,9 +82,7 @@ const login = async (req, res) => {
     }
 };
 
-// Verify token
 const verifyToken = (req, res) => {
-    // If middleware passed, token is valid
     res.json({
         success: true,
         message: 'Token is valid',
@@ -103,7 +90,6 @@ const verifyToken = (req, res) => {
     });
 };
 
-// Logout (client-side will remove token)
 const logout = (req, res) => {
     res.json({
         success: true,
@@ -111,15 +97,11 @@ const logout = (req, res) => {
     });
 };
 
-// Get current user info
 const getCurrentUser = async (req, res) => {
     try {
-        const [users] = await db.query(
-            'SELECT user_id, username, email, full_name, role, last_login, created_at FROM users WHERE user_id = ?',
-            [req.user.userId]
-        );
+        const user = await AuthModel.getUserById(req.user.userId);
 
-        if (users.length === 0) {
+        if (!user) {
             return res.status(404).json({ 
                 error: 'User not found',
                 message: 'User does not exist' 
@@ -128,7 +110,7 @@ const getCurrentUser = async (req, res) => {
 
         res.json({
             success: true,
-            user: users[0]
+            user
         });
 
     } catch (error) {

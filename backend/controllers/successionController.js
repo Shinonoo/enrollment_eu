@@ -1,53 +1,20 @@
-const db = require('../config/database');
+// controllers/successionController.js - ONLY logic & responses
+const SuccessionModel = require('../models/successionModel');
 
-// Get current school year
-const getCurrentSchoolYear = async () => {
-    try {
-        const [settings] = await db.query(
-            "SELECT setting_value FROM system_settings WHERE setting_key = 'current_school_year'"
-        );
-        return settings.length > 0 ? settings[0].setting_value : '2025-2026';
-    } catch (error) {
-        return '2025-2026';
-    }
-};
-
-// Get next school year (e.g., 2025-2026 → 2026-2027)
-const getNextSchoolYear = (currentYear) => {
-    const [start, end] = currentYear.split('-');
-    return `${parseInt(start) + 1}-${parseInt(end) + 1}`;
-};
-
-// Detect returning students for next year
 const detectReturningStudents = async (req, res) => {
     try {
-        const currentYear = await getCurrentSchoolYear();
-        const nextYear = getNextSchoolYear(currentYear);
+        const currentYear = await SuccessionModel.getCurrentSchoolYear();
+        const nextYear = SuccessionModel.getNextSchoolYear(currentYear);
 
-        // Get all enrolled students in current year
-        const [currentStudents] = await db.query(`
-            SELECT s.student_id, s.current_grade_level, s.school_level
-            FROM students s
-            WHERE s.school_year = ? AND s.enrollment_status = 'enrolled'
-        `, [currentYear]);
-
-        // Check which ones are not yet in next year
-        const [nextYearStudents] = await db.query(`
-            SELECT student_id FROM students 
-            WHERE school_year = ?
-        `, [nextYear]);
+        const currentStudents = await SuccessionModel.getCurrentYearEnrolledStudents(currentYear);
+        const nextYearStudents = await SuccessionModel.getNextYearStudents(nextYear);
 
         const nextYearIds = nextYearStudents.map(s => s.student_id);
         const returningStudents = currentStudents.filter(s => !nextYearIds.includes(s.student_id));
 
-        // Mark as returning students
         let markedCount = 0;
         for (let student of returningStudents) {
-            await db.query(
-                `UPDATE students SET is_returning_student = 1, previous_student_number = student_number 
-                 WHERE student_id = ?`,
-                [student.student_id]
-            );
+            await SuccessionModel.markReturningStudent(student.student_id);
             markedCount++;
         }
 
@@ -67,11 +34,11 @@ const detectReturningStudents = async (req, res) => {
     }
 };
 
-// Promote students to next grade
 const promoteStudents = async (req, res) => {
     try {
         const { studentIds, nextSchoolYear } = req.body;
-        const nextYear = nextSchoolYear || getNextSchoolYear(await getCurrentSchoolYear());
+        const currentYear = await SuccessionModel.getCurrentSchoolYear();
+        const nextYear = nextSchoolYear || SuccessionModel.getNextSchoolYear(currentYear);
 
         if (!studentIds || studentIds.length === 0) {
             return res.status(400).json({
@@ -85,74 +52,73 @@ const promoteStudents = async (req, res) => {
 
         for (let studentId of studentIds) {
             try {
-                // Get current student details
-                const [students] = await db.query(
-                    'SELECT * FROM students WHERE student_id = ?',
-                    [studentId]
-                );
+                const student = await SuccessionModel.getStudentById(studentId);
+                if (!student) continue;
 
-                if (students.length === 0) continue;
-
-                const student = students[0];
                 let nextGrade = parseInt(student.current_grade_level) + 1;
 
-                // Validate grade progression
                 if (student.school_level === 'JHS' && nextGrade > 10) {
-                    // Promote to SHS
-                    nextGrade = 11;
-                    await db.query(
-                        `INSERT INTO students (student_number, first_name, middle_name, last_name, suffix,
-                            date_of_birth, gender, email, phone_number, address_line1, address_line2,
-                            city, province, zip_code, guardian_name, guardian_relationship, guardian_phone,
-                            guardian_email, school_level, current_grade_level, strand, student_type,
-                            enrollment_status, school_year, is_returning_student, previous_student_number)
-                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                        [
-                            `${nextYear}-${String(studentId).padStart(6, '0')}`,
-                            student.first_name, student.middle_name, student.last_name, student.suffix,
-                            student.date_of_birth, student.gender, student.email, student.phone_number,
-                            student.address_line1, student.address_line2, student.city, student.province,
-                            student.zip_code, student.guardian_name, student.guardian_relationship,
-                            student.guardian_phone, student.guardian_email, 'SHS', nextGrade,
-                            student.strand, 'regular', 'enrolled', nextYear, 1, student.student_number
-                        ]
-                    );
+                    // Promote to SHS Grade 11
+                    await SuccessionModel.insertPromotedStudent({
+                        studentNumber: `${nextYear}-${String(studentId).padStart(6, '0')}`,
+                        first_name: student.first_name,
+                        middle_name: student.middle_name,
+                        last_name: student.last_name,
+                        suffix: student.suffix,
+                        date_of_birth: student.date_of_birth,
+                        gender: student.gender,
+                        email: student.email,
+                        phone_number: student.phone_number,
+                        address_line1: student.address_line1,
+                        address_line2: student.address_line2,
+                        city: student.city,
+                        province: student.province,
+                        zip_code: student.zip_code,
+                        guardian_name: student.guardian_name,
+                        guardian_relationship: student.guardian_relationship,
+                        guardian_phone: student.guardian_phone,
+                        guardian_email: student.guardian_email,
+                        school_level: 'SHS',
+                        current_grade_level: 11,
+                        strand: student.strand,
+                        school_year: nextYear,
+                        previous_student_number: student.student_number
+                    });
                 } else if (student.school_level === 'SHS' && nextGrade > 12) {
                     // Mark as graduated
-                    await db.query(
-                        `UPDATE students SET enrollment_status = 'graduated' WHERE student_id = ?`,
-                        [studentId]
-                    );
+                    await SuccessionModel.markStudentGraduated(studentId);
                     errors.push(`Student ${student.first_name} has graduated`);
                     continue;
                 } else {
-                    // Same school level, just next grade
-                    await db.query(
-                        `INSERT INTO students (student_number, first_name, middle_name, last_name, suffix,
-                            date_of_birth, gender, email, phone_number, address_line1, address_line2,
-                            city, province, zip_code, guardian_name, guardian_relationship, guardian_phone,
-                            guardian_email, school_level, current_grade_level, strand, student_type,
-                            enrollment_status, school_year, is_returning_student, previous_student_number)
-                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                        [
-                            `${nextYear}-${String(studentId).padStart(6, '0')}`,
-                            student.first_name, student.middle_name, student.last_name, student.suffix,
-                            student.date_of_birth, student.gender, student.email, student.phone_number,
-                            student.address_line1, student.address_line2, student.city, student.province,
-                            student.zip_code, student.guardian_name, student.guardian_relationship,
-                            student.guardian_phone, student.guardian_email, student.school_level, nextGrade,
-                            student.strand, 'regular', 'enrolled', nextYear, 1, student.student_number
-                        ]
-                    );
+                    // Same school level, next grade
+                    await SuccessionModel.insertPromotedStudent({
+                        studentNumber: `${nextYear}-${String(studentId).padStart(6, '0')}`,
+                        first_name: student.first_name,
+                        middle_name: student.middle_name,
+                        last_name: student.last_name,
+                        suffix: student.suffix,
+                        date_of_birth: student.date_of_birth,
+                        gender: student.gender,
+                        email: student.email,
+                        phone_number: student.phone_number,
+                        address_line1: student.address_line1,
+                        address_line2: student.address_line2,
+                        city: student.city,
+                        province: student.province,
+                        zip_code: student.zip_code,
+                        guardian_name: student.guardian_name,
+                        guardian_relationship: student.guardian_relationship,
+                        guardian_phone: student.guardian_phone,
+                        guardian_email: student.guardian_email,
+                        school_level: student.school_level,
+                        current_grade_level: nextGrade,
+                        strand: student.strand,
+                        school_year: nextYear,
+                        previous_student_number: student.student_number
+                    });
                 }
 
-                // Archive previous history
-                await db.query(
-                    `INSERT INTO student_history (student_id, school_year, grade_level, enrollment_status, promoted)
-                     VALUES (?, ?, ?, ?, 1)`,
-                    [studentId, await getCurrentSchoolYear(), student.current_grade_level, 'promoted']
-                );
-
+                await SuccessionModel.insertStudentHistory(studentId, currentYear, student.current_grade_level, 'promoted');
                 promotedCount++;
             } catch (error) {
                 errors.push(`Failed to promote student ${studentId}: ${error.message}`);
@@ -175,97 +141,87 @@ const promoteStudents = async (req, res) => {
     }
 };
 
-// Execute year-end succession
 const executeYearEndSuccession = async (req, res) => {
     try {
         const { nextSchoolYear } = req.body;
-        const currentYear = await getCurrentSchoolYear();
-        const nextYear = nextSchoolYear || getNextSchoolYear(currentYear);
+        const currentYear = await SuccessionModel.getCurrentSchoolYear();
+        const nextYear = nextSchoolYear || SuccessionModel.getNextSchoolYear(currentYear);
 
-        // Step 1: Archive current year data
-        const [currentStudents] = await db.query(`
-            SELECT s.student_id, s.current_grade_level, s.school_level, s.enrollment_status
-            FROM students s
-            WHERE s.school_year = ?
-        `, [currentYear]);
+        const currentStudents = await SuccessionModel.getCurrentYearEnrolledStudents(currentYear);
 
-        // Step 2: Create promotion records for eligible students
         let promotedCount = 0;
         let graduatedCount = 0;
-        let errors = [];
+        const errors = [];
 
         for (let student of currentStudents) {
             try {
-                if (student.enrollment_status !== 'enrolled') continue;
-
                 let nextGrade = parseInt(student.current_grade_level) + 1;
 
                 if (student.school_level === 'JHS' && nextGrade > 10) {
                     // JHS Grade 10 → SHS Grade 11
-                    const [existing] = await db.query(
-                        `SELECT student_id FROM students 
-                         WHERE previous_student_number = (
-                            SELECT student_number FROM students WHERE student_id = ?
-                         ) AND school_year = ?`,
-                        [student.student_id, nextYear]
-                    );
+                    const exists = await SuccessionModel.checkExistingPromotion(student.student_id, nextYear);
 
-                    if (existing.length === 0) {
-                        const [baseStudent] = await db.query(
-                            'SELECT * FROM students WHERE student_id = ?',
-                            [student.student_id]
-                        );
-
-                        await db.query(
-                            `INSERT INTO students (student_number, first_name, middle_name, last_name, suffix,
-                                date_of_birth, gender, email, phone_number, address_line1, address_line2,
-                                city, province, zip_code, guardian_name, guardian_relationship, guardian_phone,
-                                guardian_email, school_level, current_grade_level, strand, student_type,
-                                enrollment_status, school_year, is_returning_student, previous_student_number)
-                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                            [
-                                `${nextYear}-${String(student.student_id).padStart(6, '0')}`,
-                                baseStudent[0].first_name, baseStudent[0].middle_name, baseStudent[0].last_name, baseStudent[0].suffix,
-                                baseStudent[0].date_of_birth, baseStudent[0].gender, baseStudent[0].email, baseStudent[0].phone_number,
-                                baseStudent[0].address_line1, baseStudent[0].address_line2, baseStudent[0].city, baseStudent[0].province,
-                                baseStudent[0].zip_code, baseStudent[0].guardian_name, baseStudent[0].guardian_relationship,
-                                baseStudent[0].guardian_phone, baseStudent[0].guardian_email, 'SHS', 11,
-                                baseStudent[0].strand, 'regular', 'enrolled', nextYear, 1, baseStudent[0].student_number
-                            ]
-                        );
+                    if (!exists) {
+                        const baseStudent = await SuccessionModel.getStudentById(student.student_id);
+                        await SuccessionModel.insertPromotedStudent({
+                            studentNumber: `${nextYear}-${String(student.student_id).padStart(6, '0')}`,
+                            first_name: baseStudent.first_name,
+                            middle_name: baseStudent.middle_name,
+                            last_name: baseStudent.last_name,
+                            suffix: baseStudent.suffix,
+                            date_of_birth: baseStudent.date_of_birth,
+                            gender: baseStudent.gender,
+                            email: baseStudent.email,
+                            phone_number: baseStudent.phone_number,
+                            address_line1: baseStudent.address_line1,
+                            address_line2: baseStudent.address_line2,
+                            city: baseStudent.city,
+                            province: baseStudent.province,
+                            zip_code: baseStudent.zip_code,
+                            guardian_name: baseStudent.guardian_name,
+                            guardian_relationship: baseStudent.guardian_relationship,
+                            guardian_phone: baseStudent.guardian_phone,
+                            guardian_email: baseStudent.guardian_email,
+                            school_level: 'SHS',
+                            current_grade_level: 11,
+                            strand: baseStudent.strand,
+                            school_year: nextYear,
+                            previous_student_number: baseStudent.student_number
+                        });
                         promotedCount++;
                     }
                 } else if (student.school_level === 'SHS' && nextGrade > 12) {
                     // SHS Grade 12 → Graduated
-                    await db.query(
-                        `UPDATE students SET enrollment_status = 'graduated' WHERE student_id = ?`,
-                        [student.student_id]
-                    );
+                    await SuccessionModel.markStudentGraduated(student.student_id);
                     graduatedCount++;
                 } else if (student.school_level === 'JHS' || student.school_level === 'SHS') {
                     // Same level, next grade
-                    const [baseStudent] = await db.query(
-                        'SELECT * FROM students WHERE student_id = ?',
-                        [student.student_id]
-                    );
-
-                    await db.query(
-                        `INSERT INTO students (student_number, first_name, middle_name, last_name, suffix,
-                            date_of_birth, gender, email, phone_number, address_line1, address_line2,
-                            city, province, zip_code, guardian_name, guardian_relationship, guardian_phone,
-                            guardian_email, school_level, current_grade_level, strand, student_type,
-                            enrollment_status, school_year, is_returning_student, previous_student_number)
-                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                        [
-                            `${nextYear}-${String(student.student_id).padStart(6, '0')}`,
-                            baseStudent[0].first_name, baseStudent[0].middle_name, baseStudent[0].last_name, baseStudent[0].suffix,
-                            baseStudent[0].date_of_birth, baseStudent[0].gender, baseStudent[0].email, baseStudent[0].phone_number,
-                            baseStudent[0].address_line1, baseStudent[0].address_line2, baseStudent[0].city, baseStudent[0].province,
-                            baseStudent[0].zip_code, baseStudent[0].guardian_name, baseStudent[0].guardian_relationship,
-                            baseStudent[0].guardian_phone, baseStudent[0].guardian_email, student.school_level, nextGrade,
-                            baseStudent[0].strand, 'regular', 'enrolled', nextYear, 1, baseStudent[0].student_number
-                        ]
-                    );
+                    const baseStudent = await SuccessionModel.getStudentById(student.student_id);
+                    await SuccessionModel.insertPromotedStudent({
+                        studentNumber: `${nextYear}-${String(student.student_id).padStart(6, '0')}`,
+                        first_name: baseStudent.first_name,
+                        middle_name: baseStudent.middle_name,
+                        last_name: baseStudent.last_name,
+                        suffix: baseStudent.suffix,
+                        date_of_birth: baseStudent.date_of_birth,
+                        gender: baseStudent.gender,
+                        email: baseStudent.email,
+                        phone_number: baseStudent.phone_number,
+                        address_line1: baseStudent.address_line1,
+                        address_line2: baseStudent.address_line2,
+                        city: baseStudent.city,
+                        province: baseStudent.province,
+                        zip_code: baseStudent.zip_code,
+                        guardian_name: baseStudent.guardian_name,
+                        guardian_relationship: baseStudent.guardian_relationship,
+                        guardian_phone: baseStudent.guardian_phone,
+                        guardian_email: baseStudent.guardian_email,
+                        school_level: student.school_level,
+                        current_grade_level: nextGrade,
+                        strand: baseStudent.strand,
+                        school_year: nextYear,
+                        previous_student_number: baseStudent.student_number
+                    });
                     promotedCount++;
                 }
             } catch (error) {
@@ -273,11 +229,7 @@ const executeYearEndSuccession = async (req, res) => {
             }
         }
 
-        // Step 3: Update system settings
-        await db.query(
-            `UPDATE system_settings SET setting_value = ? WHERE setting_key = 'current_school_year'`,
-            [nextYear]
-        );
+        await SuccessionModel.updateCurrentSchoolYear(nextYear);
 
         res.json({
             success: true,
@@ -300,32 +252,12 @@ const executeYearEndSuccession = async (req, res) => {
     }
 };
 
-// Get section progression map
 const getSectionProgressionMap = async (req, res) => {
     try {
-        const currentYear = await getCurrentSchoolYear();
-        const nextYear = getNextSchoolYear(currentYear);
+        const currentYear = await SuccessionModel.getCurrentSchoolYear();
+        const nextYear = SuccessionModel.getNextSchoolYear(currentYear);
 
-        // Get all sections mapping
-        const [mapping] = await db.query(`
-            SELECT 
-                s1.section_id as current_section_id,
-                s1.section_name as current_section,
-                s1.grade_level as current_grade,
-                s2.section_id as next_section_id,
-                s2.section_name as next_section,
-                s2.grade_level as next_grade,
-                COUNT(DISTINCT ss.student_id) as student_count
-            FROM sections s1
-            LEFT JOIN sections s2 ON 
-                (s1.grade_level < 10 AND s2.grade_level = s1.grade_level + 1 AND s2.school_level = s1.school_level) OR
-                (s1.grade_level = 10 AND s2.grade_level = 11 AND s2.school_level = 'SHS') OR
-                (s1.grade_level >= 11 AND s2.grade_level = s1.grade_level + 1 AND s2.school_level = 'SHS')
-            LEFT JOIN student_sections ss ON s1.section_id = ss.section_id
-            WHERE s1.school_year = ? AND s1.is_active = 1
-            GROUP BY s1.section_id
-            ORDER BY s1.school_level, s1.grade_level
-        `, [currentYear]);
+        const mapping = await SuccessionModel.getSectionProgressionMap(currentYear);
 
         res.json({
             success: true,

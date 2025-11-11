@@ -1,32 +1,15 @@
-const db = require('../config/database');
+// controllers/facultyController.js - ONLY logic & responses
+const FacultyModel = require('../models/facultyModel');
 
-// Get all faculty
 const getAllFaculty = async (req, res) => {
     try {
         const { department, position, search } = req.query;
 
-        let query = 'SELECT * FROM faculty WHERE 1=1';
-        const params = [];
-
-        if (department) {
-            query += ' AND department = ?';
-            params.push(department);
-        }
-
-        if (position) {
-            query += ' AND position = ?';
-            params.push(position);
-        }
-
-        if (search) {
-            query += ' AND (first_name LIKE ? OR last_name LIKE ? OR email LIKE ?)';
-            const searchTerm = `%${search}%`;
-            params.push(searchTerm, searchTerm, searchTerm);
-        }
-
-        query += ' ORDER BY last_name, first_name';
-
-        const [faculty] = await db.query(query, params);
+        const faculty = await FacultyModel.getAllFaculty({
+            department,
+            position,
+            search
+        });
 
         res.json({
             success: true,
@@ -43,7 +26,6 @@ const getAllFaculty = async (req, res) => {
     }
 };
 
-// Create faculty
 const createFaculty = async (req, res) => {
     try {
         const { firstName, middleName, lastName, email, phoneNumber, department, position, qualifications, yearsOfService, isActive } = req.body;
@@ -55,11 +37,18 @@ const createFaculty = async (req, res) => {
             });
         }
 
-        const [result] = await db.query(
-            `INSERT INTO faculty (first_name, middle_name, last_name, email, phone_number, department, position, qualifications, years_of_service, is_active)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [firstName, middleName || null, lastName, email, phoneNumber || null, department, position, qualifications || null, yearsOfService || 0, isActive ? 1 : 0]
-        );
+        const result = await FacultyModel.createFaculty({
+            firstName,
+            middleName,
+            lastName,
+            email,
+            phoneNumber,
+            department,
+            position,
+            qualifications,
+            yearsOfService,
+            isActive
+        });
 
         res.status(201).json({
             success: true,
@@ -76,17 +65,13 @@ const createFaculty = async (req, res) => {
     }
 };
 
-// Get faculty by ID
 const getFacultyById = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const [faculty] = await db.query(
-            'SELECT * FROM faculty WHERE faculty_id = ?',
-            [id]
-        );
+        const faculty = await FacultyModel.getFacultyById(id);
 
-        if (faculty.length === 0) {
+        if (!faculty) {
             return res.status(404).json({
                 error: 'Not found',
                 message: 'Faculty not found'
@@ -95,7 +80,7 @@ const getFacultyById = async (req, res) => {
 
         res.json({
             success: true,
-            faculty: faculty[0]
+            faculty
         });
 
     } catch (error) {
@@ -107,19 +92,23 @@ const getFacultyById = async (req, res) => {
     }
 };
 
-// Update faculty
 const updateFaculty = async (req, res) => {
     try {
         const { id } = req.params;
         const { firstName, middleName, lastName, email, phoneNumber, department, position, qualifications, yearsOfService, isActive } = req.body;
 
-        await db.query(
-            `UPDATE faculty 
-             SET first_name = ?, middle_name = ?, last_name = ?, email = ?, phone_number = ?, 
-                 department = ?, position = ?, qualifications = ?, years_of_service = ?, is_active = ?
-             WHERE faculty_id = ?`,
-            [firstName, middleName || null, lastName, email, phoneNumber || null, department, position, qualifications || null, yearsOfService || 0, isActive ? 1 : 0, id]
-        );
+        await FacultyModel.updateFaculty(id, {
+            firstName,
+            middleName,
+            lastName,
+            email,
+            phoneNumber,
+            department,
+            position,
+            qualifications,
+            yearsOfService,
+            isActive
+        });
 
         res.json({
             success: true,
@@ -135,15 +124,11 @@ const updateFaculty = async (req, res) => {
     }
 };
 
-// Delete faculty
 const deleteFaculty = async (req, res) => {
     try {
         const { id } = req.params;
 
-        await db.query(
-            'UPDATE faculty SET is_active = 0 WHERE faculty_id = ?',
-            [id]
-        );
+        await FacultyModel.deleteFaculty(id);
 
         res.json({
             success: true,
@@ -159,21 +144,13 @@ const deleteFaculty = async (req, res) => {
     }
 };
 
-// Get faculty statistics
 const getFacultyStatistics = async (req, res) => {
     try {
-        const [stats] = await db.query(`
-            SELECT 
-                COUNT(*) as total_faculty,
-                SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) as active_faculty,
-                SUM(CASE WHEN is_active = 0 THEN 1 ELSE 0 END) as inactive_faculty,
-                COUNT(DISTINCT department) as total_departments
-            FROM faculty
-        `);
+        const statistics = await FacultyModel.getFacultyStatistics();
 
         res.json({
             success: true,
-            statistics: stats[0]
+            statistics
         });
 
     } catch (error) {
