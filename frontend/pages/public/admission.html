@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Admission Form - Enrollment System</title>
+    <link rel="stylesheet" href="admission.css">
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- Progress Indicator -->
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+            <div class="steps-indicator">
+                <div class="step" id="step1">
+                    <div class="step-number">1</div>
+                    <div class="step-label">Personal Info</div>
+                </div>
+                <div class="step" id="step2">
+                    <div class="step-number">2</div>
+                    <div class="step-label">Contact Info</div>
+                </div>
+                <div class="step" id="step3">
+                    <div class="step-number">3</div>
+                    <div class="step-label">Guardian</div>
+                </div>
+                <div class="step" id="step4">
+                    <div class="step-number">4</div>
+                    <div class="step-label">Academic</div>
+                </div>
+                <div class="step" id="step5">
+                    <div class="step-number">5</div>
+                    <div class="step-label">Review</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <!-- Header -->
+            <div class="header">
+                <h1>🎓 Student Admission Form</h1>
+                <p>School Year 2025-2026</p>
+            </div>
+
+            <!-- Toast Notifications -->
+            <div id="toastContainer" class="toast-container"></div>
+
+            <!-- Alert Messages -->
+            <div id="alert" class="alert hidden"></div>
+
+            <!-- Success Message -->
+            <div id="successMessage" class="success-message hidden">
+                <div class="success-content">
+                    <div class="success-icon">✓</div>
+                    <h2>Application Submitted Successfully!</h2>
+                    <p>Your reference number:</p>
+                    <div class="reference-number" id="referenceNumber"></div>
+                    <p>Please save this number for tracking your application.</p>
+                    <p class="next-steps">You will receive an email confirmation shortly. The registrar will contact you within 3-5 business days.</p>
+                    <button onclick="resetForm()" class="btn btn-primary" style="margin-top: 2rem;">
+                        Submit Another Application
+                    </button>
+                </div>
+            </div>
+
+            <!-- Form Container -->
+            <div id="formContainer">
+                <form id="admissionForm" autocomplete="off">
+                    
+                    <!-- ===== STEP 1: Personal Information ===== -->
+                    <div class="form-step active" id="formStep1">
+                        <h2 class="step-title">Personal Information</h2>
+                        <p class="step-description">Tell us about yourself</p>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>First Name <span class="required">*</span></label>
+                                <input type="text" name="firstName" placeholder="Enter first name" required>
+                                <small class="field-hint">Your first name as shown in your documents</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Middle Name</label>
+                                <input type="text" name="middleName" placeholder="Enter middle name (optional)">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Last Name <span class="required">*</span></label>
+                                <input type="text" name="lastName" placeholder="Enter last name" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Suffix</label>
+                                <input type="text" name="suffix" placeholder="Jr., Sr., III (optional)">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Date of Birth <span class="required">*</span></label>
+                                <input type="date" name="dateOfBirth" required>
+                                <small id="ageDisplay" class="field-hint"></small>
+                            </div>
+                            <div class="form-group">
+                                <label>Gender <span class="required">*</span></label>
+                                <select name="gender" required>
+                                    <option value="">Select Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                    <option value="Prefer not to say">Prefer not to say</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ===== STEP 2: Contact Information ===== -->
+                    <div class="form-step" id="formStep2">
+                        <h2 class="step-title">Contact Information</h2>
+                        <p class="step-description">How can we reach you?</p>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Email Address</label>
+                                <input type="email" name="email" placeholder="your.email@example.com">
+                                <small class="field-hint">We'll send confirmation to this email</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Phone Number</label>
+                                <input type="tel" name="phoneNumber" placeholder="(+63) 9XX-XXX-XXXX">
+                            </div>
+                        </div>
+
+                        <!-- ADDRESS FIELDS: NOW PROPERLY INCLUDED -->
+                        <div class="form-group full-width">
+                            <label>Street Address <span class="required">*</span></label>
+                            <input type="text" name="street" placeholder="House No., Street Name" required>
+                            <small class="field-hint">e.g., 123 Main Street</small>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label>Barangay</label>
+                            <input type="text" name="barangay" placeholder="Barangay name (optional)">
+                            <small class="field-hint">e.g., Barangay San Jose</small>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>City <span class="required">*</span></label>
+                                <input type="text" name="city" placeholder="City name" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Province <span class="required">*</span></label>
+                                <input type="text" name="province" placeholder="Province name" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Zip Code</label>
+                            <input type="text" name="zipCode" placeholder="Postal code (optional)">
+                        </div>
+                    </div>
+
+                    <!-- ===== STEP 3: Guardian Information ===== -->
+                    <div class="form-step" id="formStep3">
+                        <h2 class="step-title">Guardian Information</h2>
+                        <p class="step-description">Emergency and legal contact information</p>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Guardian Full Name <span class="required">*</span></label>
+                                <input type="text" name="guardianName" placeholder="Parent or guardian name" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Relationship <span class="required">*</span></label>
+                                <select name="guardianRelationship" required>
+                                    <option value="">Select Relationship</option>
+                                    <option value="Father">Father</option>
+                                    <option value="Mother">Mother</option>
+                                    <option value="Guardian">Guardian</option>
+                                    <option value="Uncle">Uncle</option>
+                                    <option value="Aunt">Aunt</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Guardian Phone <span class="required">*</span></label>
+                                <input type="tel" name="guardianPhone" placeholder="(+63) 9XX-XXX-XXXX" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Guardian Email</label>
+                                <input type="email" name="guardianEmail" placeholder="guardian.email@example.com">
+                            </div>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label>Guardian Address (if different)</label>
+                            <input type="text" name="guardianAddress" placeholder="Leave blank if same as student address">
+                        </div>
+                    </div>
+
+                    <!-- ===== STEP 4: Academic Information ===== -->
+                    <div class="form-step" id="formStep4">
+                        <h2 class="step-title">Academic Information</h2>
+                        <p class="step-description">Tell us about your academic background</p>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>School Level <span class="required">*</span></label>
+                                <select name="schoolLevel" id="schoolLevel" required onchange="updateGradeLevels()">
+                                    <option value="">Select Level</option>
+                                    <option value="JHS">Junior High School (JHS)</option>
+                                    <option value="SHS">Senior High School (SHS)</option>
+                                </select>
+                                <small class="field-hint">Select the level you wish to enroll in</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Grade Level <span class="required">*</span></label>
+                                <select name="gradeLevel" id="gradeLevel" required>
+                                    <option value="">First select a level</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- STRAND: ONLY FOR SHS -->
+                        <div class="form-group full-width hidden" id="strandGroup">
+                            <label>Strand (for SHS) <span class="required">*</span></label>
+                            <select name="strand" id="strand">
+                                <option value="">Select a strand</option>
+                                <option value="STEM">STEM (Science, Technology, Engineering, Mathematics)</option>
+                                <option value="HUMSS">HUMSS (Humanities and Social Sciences)</option>
+                                <option value="ABM">ABM (Accountancy, Business and Management)</option>
+                                <option value="TVL">TVL (Technical-Vocational-Livelihood)</option>
+                                <option value="GAS">GAS (General Academic Strand)</option>
+                            </select>
+                            <small class="field-hint">Choose your academic specialization</small>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label>Previous School</label>
+                            <input type="text" name="previousSchool" placeholder="Name of your last school (optional)">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Application Type <span class="required">*</span></label>
+                            <select name="applicationType" required>
+                                <option value="">Select Type</option>
+                                <option value="new">New Student</option>
+                                <option value="returning">Returning Student</option>
+                                <option value="transferee">Transferee</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- ===== STEP 5: Review & Submit ===== -->
+                    <div class="form-step" id="formStep5">
+                        <h2 class="step-title">Review Your Information</h2>
+                        <p class="step-description">Please verify all information before submitting</p>
+
+                        <div class="review-sections" id="reviewContent">
+                            <!-- Review content will be generated by JavaScript -->
+                        </div>
+
+                        <div class="form-group checkbox-group">
+                            <label>
+                                <input type="checkbox" name="agreeTerms" required>
+                                I certify that all information provided is true and correct
+                            </label>
+                        </div>
+
+                        <div class="form-group checkbox-group">
+                            <label>
+                                <input type="checkbox" name="agreePrivacy" required>
+                                I agree to the school's privacy policy and terms of service
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Buttons -->
+                    <div class="form-navigation">
+                        <button type="button" class="btn btn-secondary" id="prevBtn" onclick="previousStep()" style="display: none;">
+                            ← Previous
+                        </button>
+                        <button type="button" class="btn btn-primary" id="nextBtn" onclick="nextStep()">
+                            Next →
+                        </button>
+                        <button type="submit" class="btn btn-success" id="submitBtn" style="display: none;">
+                            Submit Application
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="admission.js"></script>
+</body>
+</html>

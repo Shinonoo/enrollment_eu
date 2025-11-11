@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Schemes - Accountant</title>
+    <link rel="stylesheet" href="/css/shared/sidebar-styles.css">
+    <link rel="stylesheet" href="/css/accounting/payment-schemes.css">
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Sidebar will be injected here automatically by sidebar.js -->
+
+        <main class="main-content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <!-- Sidebar toggle button for mobile -->
+                    <button id="sidebarToggle" class="btn btn-sidebar-toggle" title="Show sidebar" style="margin-right:1rem;">☰</button>
+                    <div>
+                        <h1>Payment Schemes</h1>
+                        <p>Manage and configure payment schemes for all grades</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button onclick="exportSchemes()" class="btn btn-secondary" title="Export to CSV">
+                        📥 Export
+                    </button>
+                    <button onclick="openCreateModal()" class="btn btn-primary">
+                        ➕ New Scheme
+                    </button>
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <div class="stats">
+                <div class="stat-card">
+                    <h3>Total Schemes</h3>
+                    <div class="number" id="totalSchemes">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>JHS Schemes</h3>
+                    <div class="number" id="jhsSchemes">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>SHS Schemes</h3>
+                    <div class="number" id="shsSchemes">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Avg. Total Amount</h3>
+                    <div class="number" id="avgAmount">₱0</div>
+                </div>
+            </div>
+
+            <!-- Filters & Search -->
+            <div class="filters-container">
+                <div class="filter-group">
+                    <input type="text" id="searchInput" placeholder="Search by scheme name..." 
+                        onkeyup="debounceFilter()">
+                </div>
+                <div class="filter-group">
+                    <select id="levelFilter" onchange="applyFilters()">
+                        <option value="">All Levels</option>
+                        <option value="JHS">JHS</option>
+                        <option value="SHS">SHS</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <select id="gradeFilter" onchange="applyFilters()">
+                        <option value="">All Grades</option>
+                        <option value="7">Grade 7</option>
+                        <option value="8">Grade 8</option>
+                        <option value="9">Grade 9</option>
+                        <option value="10">Grade 10</option>
+                        <option value="11">Grade 11</option>
+                        <option value="12">Grade 12</option>
+                    </select>
+                </div>
+                <button onclick="resetFilters()" class="btn btn-secondary btn-sm">Reset</button>
+            </div>
+
+            <!-- Table -->
+            <div class="table-container">
+                <div id="loading" class="loading">Loading schemes...</div>
+                <div id="emptyState" class="empty-state hidden">
+                    <p>📭 No payment schemes found</p>
+                </div>
+
+                <div id="tableWrapper" style="display: none;">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th class="sortable" data-field="scheme_name">Scheme Name</th>
+                                <th class="sortable" data-field="school_level">Level</th>
+                                <th class="sortable" data-field="grade_level">Grade</th>
+                                <th class="sortable" data-field="upon_enrollment">Down Payment</th>
+                                <th>Monthly (9x)</th>
+                                <th>Cash Payment</th>
+                                <th>Cash Discount</th>
+                                <th class="sortable" data-field="total_amount">Total</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+
+                    <!-- Pagination -->
+                    <div class="pagination-container">
+                        <div class="pagination-info">
+                            Showing <span id="pageStart">0</span>-<span id="pageEnd">0</span> 
+                            of <span id="pageTotal">0</span> results
+                        </div>
+                        <div class="pagination-controls">
+                            <button onclick="previousPage()" class="btn btn-sm" id="prevBtn">← Previous</button>
+                            <div class="page-numbers" id="pageNumbers"></div>
+                            <button onclick="nextPage()" class="btn btn-sm" id="nextBtn">Next →</button>
+                        </div>
+                        <div class="items-per-page">
+                            <label>Per page:</label>
+                            <select id="itemsPerPage" onchange="changeItemsPerPage()">
+                                <option value="10">10</option>
+                                <option value="25" selected>25</option>
+                                <option value="50">50</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Create/Edit Modal -->
+    <div id="schemeModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modalTitle">Create Payment Scheme</h2>
+                <button onclick="closeModal()" class="modal-close">✕</button>
+            </div>
+            <div class="modal-body">
+                <form id="schemeForm">
+                    <input type="hidden" id="schemeId">
+
+                    <div class="form-group">
+                        <label>Scheme Name <span class="required">*</span></label>
+                        <input type="text" id="schemeName" placeholder="e.g., 25% Down Payment" required>
+                        <small id="schemeNameError" class="error"></small>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>School Level <span class="required">*</span></label>
+                            <select id="schoolLevel" required onchange="updateRelevantGrades()">
+                                <option value="">Select Level</option>
+                                <option value="JHS">Junior High School</option>
+                                <option value="SHS">Senior High School</option>
+                            </select>
+                            <small id="schoolLevelError" class="error"></small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Grade Level <span class="required">*</span></label>
+                            <select id="gradeLevel" required>
+                                <option value="">Select Grade</option>
+                                <option value="7">Grade 7</option>
+                                <option value="8">Grade 8</option>
+                                <option value="9">Grade 9</option>
+                                <option value="10">Grade 10</option>
+                                <option value="11">Grade 11</option>
+                                <option value="12">Grade 12</option>
+                            </select>
+                            <small id="gradeLevelError" class="error"></small>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Total Amount (₱) <span class="required">*</span></label>
+                            <input type="number" id="totalAmount" step="0.01" min="0" 
+                                placeholder="0.00" required onchange="calculateInstallments()">
+                            <small id="totalAmountError" class="error"></small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Down Payment (₱)</label>
+                            <input type="number" id="downPayment" step="0.01" min="0" 
+                                placeholder="0.00" onchange="calculateInstallments()">
+                            <small id="downPaymentError" class="error"></small>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Number of Installments <span class="required">*</span></label>
+                            <input type="number" id="installmentCount" value="1" min="1" max="12" 
+                                required onchange="calculateInstallments()">
+                            <small id="installmentCountError" class="error"></small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Cash Discount (₱)</label>
+                            <input type="number" id="cashDiscount" step="0.01" min="0" 
+                                placeholder="0.00">
+                            <small id="cashDiscountError" class="error"></small>
+                        </div>
+                    </div>
+
+                    <!-- Installment Breakdown Preview -->
+                    <div id="installmentPreview" class="installment-preview hidden">
+                        <h4>Installment Breakdown</h4>
+                        <div class="installment-details" id="installmentDetails"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Description (Optional)</label>
+                        <textarea id="description" placeholder="Add notes about this scheme..." rows="3"></textarea>
+                    </div>
+
+                    <div class="form-group" style="display: flex; gap: 1rem; margin-top: 2rem;">
+                        <label style="flex: 1; margin-bottom: 0;">
+                            <input type="checkbox" id="isActive" checked> Active
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeModal()" class="btn btn-secondary">Cancel</button>
+                <button onclick="submitScheme()" class="btn btn-primary">Save Scheme</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Delete Scheme</h2>
+                <button onclick="closeDeleteModal()" class="modal-close">✕</button>
+            </div>
+            <div class="modal-body">
+                <p id="deleteMessage" style="color: var(--gray-700); margin-bottom: 1rem;"></p>
+                <div style="background: #fef3c7; padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #f59e0b; color: #92400e;">
+                    ⚠️ This action cannot be undone
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeDeleteModal()" class="btn btn-secondary">Cancel</button>
+                <button onclick="confirmDelete()" class="btn" style="background: #ef4444; color: white;">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar injector - loads first -->
+    <script src="/js/shared/sidebar-injector.js"></script>
+    <!-- Page-specific script -->
+    <script src="/js/accounting/payment-schemes.js"></script>
+</body>
+</html>

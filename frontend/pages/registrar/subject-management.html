@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subjects Management</title>
+        <link rel="stylesheet" href="/css/shared/page-transitions.css">
+
+<link rel="stylesheet" href="/css/shared/sidebar-styles.css">
+<link rel="stylesheet" href="/css/registrar/subject-management.css">
+
+</head>
+
+<body>
+    <div class="dashboard">
+        <main class="main-content">
+            <div class="container">
+                <div class="header">
+                    <h1>Subjects Management</h1>
+                    <button class="btn-primary" onclick="openCreateModal()">+ Add Subject</button>
+                </div>
+
+                <div class="filters">
+                    <input type="text" class="filter-input" id="searchInput" placeholder="Search by code or name...">
+                    <select class="filter-select" id="filterSchool">
+                        <option value="">All Levels</option>
+                        <option value="JHS">JHS</option>
+                        <option value="SHS">SHS</option>
+                    </select>
+                    <select class="filter-select" id="filterGrade">
+                        <option value="">All Grades</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                    </select>
+                </div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Subject Name</th>
+                                <th>Level</th>
+                                <th>Grade</th>
+                                <th>Strand</th>
+                                <th>Units</th>
+                                <th>Semester</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="subjectsTable">
+                            <tr>
+                                <td colspan="9" class="no-data">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Create/Edit Modal -->
+    <div id="subjectModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Create Subject</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+
+            <form id="subjectForm" onsubmit="handleFormSubmit(event)">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="subjectCode">Subject Code *</label>
+                        <input type="text" id="subjectCode" name="subject_code" required maxlength="20"
+                            placeholder="e.g., MATH7">
+                    </div>
+                    <div class="form-group">
+                        <label for="subjectName">Subject Name *</label>
+                        <input type="text" id="subjectName" name="subject_name" required maxlength="100"
+                            placeholder="e.g., Mathematics 7">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="schoolLevel">School Level *</label>
+                        <select id="schoolLevel" name="school_level" required>
+                            <option value="">Select Level</option>
+                            <option value="JHS">JHS</option>
+                            <option value="SHS">SHS</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="gradeLevel">Grade Level *</label>
+                        <select id="gradeLevel" name="grade_level" required>
+                            <option value="">Select Grade</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12">12</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="strand">Strand (SHS only)</label>
+                        <input type="text" id="strand" name="strand" maxlength="50" placeholder="e.g., STEM, ABM">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="units">Units *</label>
+                        <input type="number" id="units" name="units" required min="1" max="10" value="3">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="semester">Semester *</label>
+                        <select id="semester" name="semester" required>
+                            <option value="Both">Both Semesters</option>
+                            <option value="1">1st Semester</option>
+                            <option value="2">2nd Semester</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="isRequired">
+                            <input type="checkbox" id="isRequired" name="is_required" checked>
+                            Required Subject
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" rows="3"
+                        placeholder="Subject description (optional)"></textarea>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Subject</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+<script src="/js/shared/sidebar-injector.js"></script>
+<script src="/js/registrar/subject-management.js"></script>
+</body>
+
+</html>

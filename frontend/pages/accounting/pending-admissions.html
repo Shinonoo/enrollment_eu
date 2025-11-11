@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pending Admissions - Accountant</title>
+    <link rel="stylesheet" href="/css/shared/sidebar-styles.css" />
+    <link rel="stylesheet" href="/css/accounting/pending-admissions.css" />
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Sidebar will be dynamically injected here -->
+
+        <main class="main-content">
+            <!-- Header -->
+            <div class="page-header">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <!-- Sidebar toggle button for mobile -->
+                    <button id="sidebarToggle" class="btn btn-sidebar-toggle" title="Show sidebar" style="margin-right:1rem;">☰</button>
+                    <div>
+                        <h1>Pending Admissions</h1>
+                        <p>Assign payment schemes to approved applications</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button onclick="exportData()" class="btn btn-secondary" title="Export to CSV">
+                        📥 Export
+                    </button>
+                    <button onclick="refreshData()" class="btn btn-secondary" title="Refresh data">
+                        🔄 Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <div class="stats">
+                <div class="stat-card">
+                    <h3>Total Pending</h3>
+                    <div class="number" id="totalPending">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Payment Assigned</h3>
+                    <div class="number" id="totalAssigned">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Pending Assignment</h3>
+                    <div class="number" id="totalUnassigned">0</div>
+                </div>
+            </div>
+
+            <!-- Filters & Bulk Actions -->
+            <div class="toolbar">
+                <div class="filters-container">
+                    <div class="filter-group">
+                        <input type="text" id="searchInput" placeholder="Search by name or ID..." onkeyup="debounceFilter()" />
+                    </div>
+                    <div class="filter-group">
+                        <select id="levelFilter" onchange="applyFilters()">
+                            <option value="">All Levels</option>
+                            <option value="JHS">JHS</option>
+                            <option value="SHS">SHS</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <select id="gradeFilter" onchange="applyFilters()">
+                            <option value="">All Grades</option>
+                            <option value="7">Grade 7</option>
+                            <option value="8">Grade 8</option>
+                            <option value="9">Grade 9</option>
+                            <option value="10">Grade 10</option>
+                            <option value="11">Grade 11</option>
+                            <option value="12">Grade 12</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <select id="statusFilter" onchange="applyFilters()">
+                            <option value="">All Status</option>
+                            <option value="pending">⏳ Pending</option>
+                            <option value="assigned">✓ Assigned</option>
+                        </select>
+                    </div>
+                    <button onclick="resetFilters()" class="btn btn-secondary btn-sm">Reset</button>
+                </div>
+
+                <!-- Bulk Actions -->
+                <div id="bulkActions" class="bulk-actions hidden">
+                    <span id="bulkCount">0 selected</span>
+                    <button onclick="bulkAssignPayment()" class="btn btn-primary btn-sm">Assign Payment</button>
+                    <button onclick="clearBulkSelection()" class="btn btn-secondary btn-sm">Clear</button>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-container">
+                <div id="loading" class="loading">Loading applications...</div>
+                <div id="emptyState" class="empty-state hidden">
+                    <p>📭 No applications found</p>
+                </div>
+
+                <div id="tableWrapper" style="display: none;">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th class="checkbox-col">
+                                    <input type="checkbox" id="selectAll" onchange="toggleSelectAll()" />
+                                </th>
+                                <th class="sortable" data-field="application_id">ID</th>
+                                <th class="sortable" data-field="name">Name</th>
+                                <th class="sortable" data-field="school_level">Level</th>
+                                <th class="sortable" data-field="grade_level">Grade</th>
+                                <th class="sortable" data-field="reviewed_at">Approved Date</th>
+                                <th class="sortable" data-field="status">Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+
+                    <!-- Pagination -->
+                    <div class="pagination-container">
+                        <div class="pagination-info">
+                            Showing <span id="pageStart">0</span>-<span id="pageEnd">0</span> of <span id="pageTotal">0</span> results
+                        </div>
+                        <div class="pagination-controls">
+                            <button onclick="previousPage()" class="btn btn-sm" id="prevBtn">← Previous</button>
+                            <div class="page-numbers" id="pageNumbers"></div>
+                            <button onclick="nextPage()" class="btn btn-sm" id="nextBtn">Next →</button>
+                        </div>
+                        <div class="items-per-page">
+                            <label>Per page:</label>
+                            <select id="itemsPerPage" onchange="changeItemsPerPage()">
+                                <option value="10">10</option>
+                                <option value="25" selected>25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Assign Payment Scheme</h2>
+                <button onclick="closeModal()" class="modal-close">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="student-info" id="studentInfo"></div>
+                <form id="paymentForm">
+                    <input type="hidden" id="applicationId" />
+
+                    <!-- In your payment modal, after the scheme select -->
+                    <div class="form-group">
+                        <label>Payment Scheme <span class="required">*</span></label>
+                        <select id="schemeId" onchange="updateInstallmentBreakdown()" required>
+                            <option value="">Select payment scheme...</option>
+                        </select>
+                    </div>
+
+                    <!-- ADD THIS -->
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            Enable Custom Payment (for special cases)
+                            <input type="checkbox" id="customPaymentEnabled" onchange="toggleCustomPayment()" />
+                        </label>
+                    </div>
+
+                    <!-- Custom Payment Fields (hidden by default) -->
+                    <div id="customPaymentFields" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Custom Down Payment (₱) <span class="required">*</span></label>
+                                <input
+                                    type="number"
+                                    id="customDownPayment"
+                                    step="0.01"
+                                    min="0"
+                                    placeholder="0.00"
+                                    onchange="recalculateCustomBreakdown()"
+                                />
+                                <small class="help-text">Enter the amount the student can afford</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Custom Installments</label>
+                                <input
+                                    type="number"
+                                    id="customInstallmentCount"
+                                    value="9"
+                                    min="1"
+                                    max="12"
+                                    onchange="recalculateCustomBreakdown()"
+                                />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Reason for Custom Payment</label>
+                            <textarea
+                                id="customPaymentReason"
+                                rows="2"
+                                placeholder="Explain why custom payment is needed (e.g., financial hardship)"
+                            ></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Total Amount (₱) <span class="required">*</span></label>
+                        <input
+                            type="text"
+                            id="totalAmount"
+                            readonly
+                            style="background: #f3f4f6; cursor: not-allowed"
+                        />
+                        <small class="help-text">Total amount from selected scheme</small>
+                    </div>
+
+                    <!-- Installment Breakdown (Collapsible) -->
+                    <div id="installmentBreakdown" class="installment-breakdown" style="display: none;">
+                        <div class="breakdown-header">
+                            <h4>Payment Breakdown</h4>
+                            <button
+                                type="button"
+                                id="toggleBreakdownBtn"
+                                onclick="toggleBreakdown()"
+                                class="btn-toggle"
+                            >
+                                ▼ Show Breakdown
+                            </button>
+                        </div>
+                        <div id="breakdownList" class="breakdown-list"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Notes (Optional)</label>
+                        <textarea id="notes" placeholder="Additional notes..." rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeModal()" class="btn btn-secondary">Cancel</button>
+                <button onclick="submitPayment()" class="btn btn-primary">Assign Payment</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Assignment Modal -->
+    <div id="bulkModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Bulk Assign Payment Scheme</h2>
+                <button onclick="closeBulkModal()" class="modal-close">✕</button>
+            </div>
+            <div class="modal-body">
+                <p id="bulkModalCount" style="margin-bottom: 1.5rem; color: #6b7280"></p>
+                <form id="bulkPaymentForm">
+                    <div class="form-group">
+                        <label>Payment Scheme <span class="required">*</span></label>
+                        <select id="bulkSchemeId" required>
+                            <option value="">Select payment scheme...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Installments</label>
+                        <select id="bulkInstallmentOption">
+                            <option value="full">Full Payment</option>
+                            <option value="split2">2 Installments</option>
+                            <option value="split3">3 Installments</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Notes (Optional)</label>
+                        <textarea id="bulkNotes" placeholder="Additional notes..." rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeBulkModal()" class="btn btn-secondary">Cancel</button>
+                <button onclick="submitBulkPayment()" class="btn btn-primary">Assign to All Selected</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Sidebar injector script -->
+    <script src="/js/shared/sidebar-injector.js" defer></script>
+    <!-- Page-specific script -->
+    <script src="/js/accounting/pending-admissions.js" defer></script>
+</body>
+</html>

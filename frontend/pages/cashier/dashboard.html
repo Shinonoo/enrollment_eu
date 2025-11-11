@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cashier Dashboard</title>
+    <link rel="stylesheet" href="/css/shared/sidebar-styles.css" />
+    <link rel="stylesheet" href="/css/cashier/dashboard.css" />
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Sidebar will be injected here -->
+        <main class="main-content">
+            <div class="page-header">
+                <h1>Cashier Dashboard</h1>
+                <p>Process payments and manage transactions</p>
+            </div>
+            <!-- Stats grid -->
+            <div class="stats-grid">
+                <div class="stat-card stat-pending">
+                    <div class="stat-icon">⏳</div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="pendingCount">0</div>
+                        <div class="stat-label">Pending Payments</div>
+                    </div>
+                </div>
+                <div class="stat-card stat-partial">
+                    <div class="stat-icon">⚠️</div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="partialCount">0</div>
+                        <div class="stat-label">Partial Payments</div>
+                    </div>
+                </div>
+                <div class="stat-card stat-paid">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="paidCount">0</div>
+                        <div class="stat-label">Fully Paid</div>
+                    </div>
+                </div>
+                <div class="stat-card stat-collected">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-content">
+                        <div class="stat-value">₱<span id="totalCollected">0</span></div>
+                        <div class="stat-label">Total Collected</div>
+                    </div>
+                </div>
+            </div>
+            <!-- Analytics section -->
+<section class="analytics-section">
+  <h2>Payment Analytics</h2>
+  <div class="charts-grid">
+    <div class="chart-card">
+      <canvas id="paymentsByStatusChart" aria-label="Payments by Status" role="img"></canvas>
+      <p>Payments Status Distribution</p>
+    </div>
+    <div class="chart-card">
+      <canvas id="monthlyCollectionChart" aria-label="Monthly Collection" role="img"></canvas>
+      <p>Monthly Collection Trends</p>
+    </div>
+  </div>
+</section>
+
+            <!-- Quick actions card -->
+            <div class="card">
+                <h3>Quick Actions</h3>
+                <div class="actions-grid">
+                    <a href="/pages/cashier/pending-payments.html" class="btn btn-primary">
+                        <span class="btn-icon">💳</span>
+                        View Pending Payments
+                    </a>
+                </div>
+            </div>
+        </main>
+    </div>
+    <!-- Inject sidebar script -->
+    <script src="/js/shared/sidebar-injector.js" defer></script>
+    <!-- Page-specific script -->
+    <script src="/js/cashier/dashboard.js" defer></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Processing Students - Accounting</title>
+    <link rel="stylesheet" href="/css/shared/sidebar-styles.css" />
+    <link rel="stylesheet" href="/css/accounting/processing-students.css" />
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Sidebar will be injected here automatically by sidebar-injector.js -->
+
+        <main class="main-content">
+            <div class="page-header">
+                <div>
+                    <h1>Processing Students</h1>
+                    <p>Students sent back from cashier - ready for enrollment</p>
+                </div>
+                <button onclick="loadStudents()" class="btn btn-secondary btn-sm" title="Refresh">
+                    🔄 Refresh
+                </button>
+            </div>
+
+            <div id="loading" class="loading">Loading students...</div>
+            <div id="emptyState" class="empty-state hidden">
+                <p>📭 No students in processing</p>
+                <p style="font-size: 0.875rem; color: #6b7280; margin-top: 0.5rem;">
+                    Students sent back from cashier will appear here
+                </p>
+            </div>
+
+            <div id="studentsGrid" class="students-grid hidden"></div>
+        </main>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal-overlay">
+        <div class="confirm-modal">
+            <div class="confirm-icon">
+                <div class="icon-circle">
+                    <span>📄</span>
+                </div>
+            </div>
+            <h3 class="confirm-title">Ready to Print Registration Form?</h3>
+            <p class="confirm-message">
+                For: <strong id="confirmStudentName"></strong><br />
+                <span id="confirmStudentLevel"></span>
+            </p>
+            <div class="confirm-note">
+                After printing, you will be asked to confirm enrollment.
+            </div>
+            <div class="confirm-actions">
+                <button onclick="closeConfirmModal()" class="btn btn-secondary">✕ Cancel</button>
+                <button onclick="confirmPrint()" class="btn btn-primary">🖨️ Print Form</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar injector script -->
+    <script src="/js/shared/sidebar-injector.js" defer></script>
+    <!-- Page-specific script -->
+    <script src="/js/accounting/processing-students.js" defer></script>
+</body>
+</html>

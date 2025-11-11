@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curriculum Management</title>
+        <link rel="stylesheet" href="/css/shared/page-transitions.css">
+
+<link rel="stylesheet" href="/css/shared/sidebar-styles.css">
+<link rel="stylesheet" href="/css/registrar/curriculum.css">
+
+</head>
+
+<body>
+    <!-- WRAPPER ADDED: .dashboard creates the flex container for sidebar + content -->
+    <div class="dashboard">
+        <!-- WRAPPER ADDED: .main-content will take remaining space after sidebar -->
+        <main class="main-content">
+            <!-- ORIGINAL CONTENT: Your existing container stays inside -->
+            <div class="container">
+                <div class="header">
+                    <h1>Curriculum Management</h1>
+                    <button class="btn-primary" onclick="openCreateModal()">+ Add Curriculum</button>
+                </div>
+
+                <div class="filters">
+                    <input type="text" class="filter-input" id="searchInput" placeholder="Search by name or code...">
+                    <select class="filter-select" id="filterSchool">
+                        <option value="">All Levels</option>
+                        <option value="JHS">JHS</option>
+                        <option value="SHS">SHS</option>
+                    </select>
+                    <select class="filter-select" id="filterGrade">
+                        <option value="">All Grades</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                    </select>
+                </div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Name</th>
+                                <th>Level</th>
+                                <th>Grade</th>
+                                <th>Strand</th>
+                                <th>Subjects</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="curriculaTable">
+                            <tr>
+                                <td colspan="8" class="no-data">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Create/Edit Modal -->
+    <div id="curriculumModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Create Curriculum</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+
+            <form id="curriculumForm" onsubmit="handleFormSubmit(event)">
+                <div class="form-group">
+                    <label for="curriculumCode">Curriculum Code *</label>
+                    <input type="text" id="curriculumCode" name="curriculum_code" required maxlength="20"
+                        placeholder="e.g., STEM-10-2025">
+                </div>
+
+                <div class="form-group">
+                    <label for="curriculumName">Curriculum Name *</label>
+                    <input type="text" id="curriculumName" name="curriculum_name" required maxlength="100"
+                        placeholder="e.g., STEM Curriculum Grade 10">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="schoolLevel">School Level *</label>
+                        <select id="schoolLevel" name="school_level" required onchange="filterSubjectsByLevel()">
+                            <option value="">Select Level</option>
+                            <option value="JHS">JHS</option>
+                            <option value="SHS">SHS</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="gradeLevel">Grade Level *</label>
+                        <select id="gradeLevel" name="grade_level" required onchange="filterSubjectsByLevel()">
+                            <option value="">Select Grade</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12">12</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="strand">Strand (SHS only)</label>
+                        <input type="text" id="strand" name="strand" maxlength="50"
+                            placeholder="e.g., STEM, ABM, HUMSS">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" rows="3"
+                        placeholder="Curriculum description..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Assign Subjects</label>
+                    <div id="subjectsContainer" class="subjects-list"></div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Curriculum</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="detailTitle">Curriculum Details</h2>
+                <button class="close-btn" onclick="closeDetailModal()">&times;</button>
+            </div>
+
+            <div id="detailContent"></div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" id="editBtn" onclick="editCurrentCurriculum()">Edit</button>
+                <button type="button" class="btn-secondary" onclick="closeDetailModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+<script src="/js/shared/sidebar-injector.js"></script>
+<script src="/js/registrar/curriculum.js"></script>
+</body>
+
+</html>

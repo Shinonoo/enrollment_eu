@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accounting Dashboard</title>
+    <link rel="stylesheet" href="/css/shared/sidebar-styles.css">
+    <link rel="stylesheet" href="/css/accounting/dashboard.css">
+</head>
+
+<body>
+    <!-- Dashboard wrapper - REQUIRED for sidebar injection -->
+    <div class="dashboard">
+        <!-- Sidebar will be injected here automatically by sidebar-injector.js -->
+
+        <main class="main-content">
+            <!-- Page Header with Toggle Button -->
+            <div class="page-header">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <!-- Toggle button for sidebar - REQUIRED -->
+                    <div>
+                        <h1>Accounting Dashboard</h1>
+                        <p>Financial overview and payment management</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <span class="last-updated">Updated: <span id="lastUpdate">just now</span></span>
+                    <button onclick="refreshDashboard()" class="btn btn-secondary btn-sm" title="Refresh data">
+                        🔄 Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Key Metrics Row 1 -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <h3>Total Payment Records</h3>
+                        <span class="stat-icon">📊</span>
+                    </div>
+                    <div class="stat-value" id="totalPayments">0</div>
+                    <div class="stat-trend" id="totalTrend">
+                        <span class="trend-badge">+0%</span> from last month
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <h3>Pending Payments</h3>
+                        <span class="stat-icon warning">⏳</span>
+                    </div>
+                    <div class="stat-value warning" id="pendingPayments">0</div>
+                    <div class="stat-trend">
+                        <button onclick="navigateTo('/pages/accounting/pending-admissions.html')"
+                            class="trend-link">View Details →</button>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <h3>Payments Received</h3>
+                        <span class="stat-icon success">✓</span>
+                    </div>
+                    <div class="stat-value success" id="paidPayments">0</div>
+                    <div class="stat-progress">
+                        <div class="progress-bar" id="paidProgress"></div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <h3>Total Collected</h3>
+                        <span class="stat-icon primary">💵</span>
+                    </div>
+                    <div class="stat-value primary">₱<span id="totalCollected">0</span></div>
+                    <div class="stat-trend">
+                        <span id="avgPayment" class="trend-text">Avg: ₱0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Financial Summary Row -->
+            <div class="stats-grid">
+                <div class="stat-card wide">
+                    <div class="stat-header">
+                        <h3>Collection Rate</h3>
+                    </div>
+                    <div class="collection-rate">
+                        <div class="rate-display">
+                            <span class="rate-value" id="collectionRate">0%</span>
+                            <span class="rate-label">of total payments collected</span>
+                        </div>
+                        <svg class="progress-circle" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="40" class="circle-bg"></circle>
+                            <circle cx="50" cy="50" r="40" class="circle-fill" id="circleProgress"></circle>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="stat-card wide">
+                    <div class="stat-header">
+                        <h3>Payment Status Breakdown</h3>
+                    </div>
+                    <div class="status-breakdown" id="statusBreakdown">
+                        <div class="breakdown-item">
+                            <div class="breakdown-bar pending"></div>
+                            <div class="breakdown-label">Pending: <span id="pendingCount">0</span></div>
+                        </div>
+                        <div class="breakdown-item">
+                            <div class="breakdown-bar processing"></div>
+                            <div class="breakdown-label">Processing: <span id="processingCount">0</span></div>
+                        </div>
+                        <div class="breakdown-item">
+                            <div class="breakdown-bar completed"></div>
+                            <div class="breakdown-label">Completed: <span id="completedCount">0</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Transactions -->
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h3>Recent Transactions</h3>
+                    <a href="/pages/accounting/pending-admissions.html" class="link-btn">View All →</a>
+                </div>
+
+                <div id="recentTransactionsLoading" class="loading">Loading transactions...</div>
+                <div id="recentTransactionsEmpty" class="empty-state hidden">
+                    <p>📭 No transactions found</p>
+                </div>
+
+                <div id="recentTransactionsTable" class="table-wrapper hidden">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Student Name</th>
+                                <th>Application ID</th>
+                                <th>Payment Scheme</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Assigned Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- System Information & User Profile -->
+            <div class="info-grid">
+                <div class="card">
+                    <h3>User Information</h3>
+                    <div class="user-info">
+                        <div class="user-avatar" id="userAvatar">AC</div>
+                        <div class="user-details">
+                            <p><strong id="userName">Loading...</strong></p>
+                            <p id="userRole" style="color: #6b7280; font-size: 0.875rem;">Accountant</p>
+                            <p id="userEmail" style="color: #6b7280; font-size: 0.875rem;">user@example.com</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Quick Help</h3>
+                    <div class="help-content">
+                        <p><strong>Need help?</strong></p>
+                        <ul style="margin: 1rem 0; padding-left: 1.5rem;">
+                            <li>View pending applications and assign payment schemes</li>
+                            <li>Create and manage payment schemes for different grades</li>
+                            <li>Track payment collection status and financial metrics</li>
+                            <li>Generate financial reports and export data</li>
+                        </ul>
+                        <p style="font-size: 0.875rem; color: #6b7280; margin-top: 1rem;">
+                            Contact your administrator for support or feature requests.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+    
+    <!-- Sidebar injector - loads first -->
+    <script src="/js/shared/sidebar-injector.js"></script>
+    
+    <!-- Page-specific script -->
+    <script src="/js/accounting/dashboard.js"></script>
+</body>
+
+</html>

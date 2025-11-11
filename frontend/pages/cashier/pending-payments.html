@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Payments - Cashier</title>
+  <link rel="stylesheet" href="/css/shared/sidebar-styles.css" />
+  <link rel="stylesheet" href="/css/cashier/pending-payments.css?v=999" />
+</head>
+<body>
+  <div class="dashboard">
+    <!-- Sidebar will be injected here -->
+
+    <main class="main-content">
+      <div style="margin-bottom: 2rem;">
+        <h1 style="font-size: 2rem; color: #1f2937;">Payments</h1>
+        <p style="color: #6b7280;">Process student payment transactions</p>
+      </div>
+
+      <div class="table-container">
+        <div id="loading" class="loading">Loading payments...</div>
+        <div id="emptyState" class="empty-state hidden">No pending payments</div>
+        <table class="table" id="paymentsTable" style="display: none;">
+          <thead>
+            <tr>
+              <th>Student Name</th>
+              <th>Level/Grade</th>
+              <th>Scheme</th>
+              <th>Total</th>
+              <th>Paid</th>
+              <th>Balance</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <!-- Payment History Modal -->
+  <div id="historyModal" class="modal-overlay" style="display: none;">
+    <div class="modal" style="max-width: 800px;">
+      <div class="modal-header">
+        <h2 class="modal-title">Payment History</h2>
+      </div>
+      <div class="modal-body">
+        <div id="historyContent"></div>
+      </div>
+      <div class="modal-footer">
+        <button onclick="closeHistoryModal()" class="btn btn-secondary">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment Recording Modal -->
+  <div id="paymentModal" class="modal-overlay" style="display: none;">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Record Payment</h2>
+      </div>
+      <div class="modal-body">
+        <div id="successMsg" class="success-message hidden"></div>
+
+        <div class="payment-info" id="paymentInfo">
+          <!-- Payment info will be populated here -->
+        </div>
+
+        <div class="modal-body">
+          <div id="successMsg" class="success-message hidden"></div>
+
+          <!-- ADD SCHEME BREAKDOWN -->
+          <div class="scheme-breakdown" id="schemeBreakdown" style="display: none;">
+            <div class="breakdown-header">
+              <h4 style="font-size: 1rem; font-weight: 600; margin: 0;">Payment Scheme</h4>
+              <button
+                type="button"
+                id="toggleSchemeBtn"
+                onclick="toggleSchemeBreakdown()"
+                class="btn-toggle"
+              >
+                ▼ Show Details
+              </button>
+            </div>
+            <div id="schemeDetails" class="scheme-details"></div>
+          </div>
+
+          <form id="paymentForm">
+            <input type="hidden" id="paymentRecordId" />
+
+            <div class="form-group">
+              <label>Payment Amount <span style="color: red;">*</span></label>
+              <input type="number" id="amount" step="0.01" min="0.01" required placeholder="0.00" />
+              <small style="color: #6b7280;">Enter amount being paid</small>
+            </div>
+
+            <div class="form-group">
+              <label>Payment Method <span style="color: red;">*</span></label>
+              <select id="paymentMethod" required>
+                <option value="">Select method...</option>
+                <option value="cash">Cash</option>
+                <option value="gcash">GCash</option>
+                <option value="bank_transfer">Bank Transfer</option>
+                <option value="check">Check</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Reference Number</label>
+              <input type="text" id="referenceNumber" placeholder="OR/Receipt number" />
+            </div>
+
+            <div class="form-group">
+              <label>Notes</label>
+              <input type="text" id="notes" placeholder="Additional notes..." />
+            </div>
+          </form>
+        </div>
+
+        <div class="modal-footer">
+          <button onclick="closeModal()" class="btn btn-secondary">Cancel</button>
+          <button onclick="submitPayment()" class="btn btn-primary" id="submitBtn">Record Payment</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="/js/shared/sidebar-injector.js" defer></script>
+    <script src="/js/cashier/pending-payments.js" defer></script>
+</body>
+</html>

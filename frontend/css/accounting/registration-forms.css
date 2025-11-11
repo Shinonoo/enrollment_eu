@@ -1,0 +1,434 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Courier New', Courier, monospace;
+    background: #f5f5f5;
+    padding: 2rem;
+}
+
+.loading {
+    text-align: center;
+    padding: 3rem;
+    font-size: 1.2rem;
+    color: #666;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.form-container {
+    max-width: 900px;
+    margin: 0 auto;
+    background: white;
+    padding: 2rem;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    border: 2px solid #000;
+}
+
+/* Header */
+.form-header {
+    text-align: center;
+    border-bottom: 3px double #000;
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.form-header h1 {
+    font-size: 1.4rem;
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+    letter-spacing: 1px;
+}
+
+.form-header h2 {
+    font-size: 1rem;
+    font-weight: normal;
+    margin-bottom: 0.5rem;
+}
+
+.school-year {
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+.form-number {
+    position: absolute;
+    top: 0;
+    right: 0;
+    font-size: 1.1rem;
+    padding: 0.5rem;
+    border: 2px solid #000;
+    background: #fff;
+}
+
+/* Info Section */
+.info-section {
+    margin-bottom: 1.5rem;
+}
+
+.info-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.info-table td {
+    padding: 0.4rem 0.5rem;
+    border: 1px solid #000;
+}
+
+.info-table strong {
+    font-weight: bold;
+    margin-right: 0.5rem;
+}
+
+/* Section Titles */
+.section-title {
+    text-align: center;
+    font-size: 0.95rem;
+    font-weight: bold;
+    padding: 0.5rem;
+    background: #000;
+    color: white;
+    margin: 1.5rem 0 0.75rem 0;
+    letter-spacing: 2px;
+}
+
+/* Subjects Table */
+.subjects-section {
+    margin-bottom: 1.5rem;
+}
+
+.subjects-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+    border: 2px solid #000;
+}
+
+.subjects-table th,
+.subjects-table td {
+    border: 1px solid #000;
+    padding: 0.4rem 0.5rem;
+    text-align: left;
+}
+
+.subjects-table th {
+    background: #e0e0e0;
+    font-weight: bold;
+    text-align: center;
+}
+
+.subjects-table tfoot td {
+    font-weight: bold;
+    background: #f5f5f5;
+}
+
+/* Fees Table */
+.fees-section {
+    margin-bottom: 1.5rem;
+}
+
+.fees-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+    border: 2px solid #000;
+}
+
+.fees-table th,
+.fees-table td {
+    border: 1px solid #000;
+    padding: 0.5rem;
+}
+
+.fees-table th {
+    background: #e0e0e0;
+    font-weight: bold;
+    text-align: center;
+}
+
+.fees-table tfoot td {
+    font-weight: bold;
+    background: #f5f5f5;
+    text-align: right;
+}
+
+/* Registered Stamp */
+.registered-section {
+    margin: 2rem 0;
+    display: flex;
+    justify-content: center;
+}
+
+.registered-stamp {
+    border: 3px solid #000;
+    padding: 1rem 2rem;
+    text-align: center;
+    max-width: 500px;
+}
+
+.registered-stamp h2 {
+    font-size: 1.8rem;
+    font-weight: bold;
+    letter-spacing: 3px;
+    margin-bottom: 0.5rem;
+}
+
+.registered-stamp p {
+    font-size: 0.75rem;
+    margin: 0.25rem 0;
+}
+
+.registered-stamp .note {
+    margin-top: 0.75rem;
+    font-size: 0.65rem;
+    line-height: 1.3;
+}
+
+/* Assessment Section */
+.assessment-section {
+    margin: 2rem 0;
+    border: 2px solid #000;
+    padding: 1rem;
+}
+
+.assessment-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.assessment-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.3rem 0;
+    font-size: 0.8rem;
+    border-bottom: 1px dotted #ccc;
+}
+
+.assessment-row .label {
+    font-weight: bold;
+}
+
+.assessment-row .value {
+    text-align: right;
+}
+
+.assessment-row.indent {
+    padding-left: 1rem;
+}
+
+.total-assessment {
+    border-top: 3px double #000;
+    padding-top: 1rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    font-size: 1.1rem;
+}
+
+.total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border: 2px solid #000;
+    background: #f9f9f9;
+}
+
+.total-row .amount {
+    font-weight: bold;
+    font-size: 1.3rem;
+}
+
+.total-row .balance {
+    color: #8B0000;
+}
+
+/* Oath Section */
+.oath-section {
+    margin: 2rem 0;
+    font-size: 0.75rem;
+    line-height: 1.5;
+}
+
+.oath-section h4 {
+    font-size: 0.85rem;
+    text-align: center;
+    margin-bottom: 0.75rem;
+    text-decoration: underline;
+}
+
+.oath-text {
+    text-align: justify;
+    margin-bottom: 0.75rem;
+}
+
+.oath-list {
+    margin-left: 2rem;
+    margin-bottom: 1rem;
+}
+
+.oath-list li {
+    margin-bottom: 0.5rem;
+}
+
+.consent-text {
+    text-align: justify;
+    margin-bottom: 0.75rem;
+    font-size: 0.7rem;
+}
+
+/* Signature Section */
+.signature-section {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin: 2rem 0;
+    border-top: 2px solid #000;
+    padding-top: 2rem;
+}
+
+.signature-box {
+    text-align: center;
+}
+
+.signature-line {
+    border-bottom: 2px solid #000;
+    height: 50px;
+    margin-bottom: 0.5rem;
+}
+
+.signature-box label {
+    font-size: 0.75rem;
+    font-weight: bold;
+    display: block;
+}
+
+/* Footer */
+.form-footer {
+    text-align: center;
+    font-size: 0.7rem;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #ccc;
+    color: #666;
+}
+
+.form-footer p {
+    margin: 0.25rem 0;
+}
+
+/* Print Actions */
+.print-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 3px double #000;
+}
+
+.btn {
+    padding: 1rem 2rem;
+    border-radius: 0.5rem;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #8B0000 0%, #6B0000 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(139, 0, 0, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(139, 0, 0, 0.4);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-success:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #6B7280 0%, #4B5563 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+}
+
+.btn-secondary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(107, 114, 128, 0.4);
+}
+
+/* Print Styles */
+@media print {
+    body {
+        background: white;
+        padding: 0;
+    }
+    
+    .form-container {
+        box-shadow: none;
+        border: none;
+        max-width: 100%;
+        padding: 1rem;
+    }
+    
+    .no-print {
+        display: none !important;
+    }
+    
+    .print-actions {
+        display: none !important;
+    }
+    
+    .form-footer {
+        border: none;
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    body {
+        padding: 0.5rem;
+    }
+    
+    .form-container {
+        padding: 1rem;
+    }
+    
+    .assessment-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .signature-section {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .total-assessment {
+        grid-template-columns: 1fr;
+    }
+}

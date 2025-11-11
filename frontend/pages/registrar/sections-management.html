@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Section Management - Enrollment System</title>
+    
+    <!-- Page-specific CSS -->
+    <link rel="stylesheet" href="css/registrar/section-management-styles.css">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Registrar Panel</h2>
+                <button class="sidebar-toggle" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="./dashboard.html" class="nav-item">
+                    <i class="fas fa-dashboard"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="./admission-management.html" class="nav-item">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Admissions</span>
+                </a>
+                <a href="./curriculum-management.html" class="nav-item">
+                    <i class="fas fa-book"></i>
+                    <span>Curriculum</span>
+                </a>
+                <a href="./sections-management.html" class="nav-item active">
+                    <i class="fas fa-users"></i>
+                    <span>Sections</span>
+                </a>
+                <a href="./student-profile.html" class="nav-item">
+                    <i class="fas fa-user-graduate"></i>
+                    <span>Students</span>
+                </a>
+                <a href="./faculty-management.html" class="nav-item">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    <span>Faculty</span>
+                </a>
+                <a href="./reports.html" class="nav-item">
+                    <i class="fas fa-file-chart"></i>
+                    <span>Reports</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <button class="nav-item logout-btn" id="logoutBtn">
+                    <i class="fas fa-sign-out"></i>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="page-header">
+                <div class="header-left">
+                    <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1>Section Management</h1>
+                </div>
+                <div class="header-right">
+                    <div class="user-info">
+                        <span class="user-name" id="userName">Loading...</span>
+                        <span class="user-role">Registrar</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div class="content-wrapper">
+                <!-- Filters and Actions -->
+                <div class="control-panel">
+                    <div class="filters-group">
+                        <div class="filter-item">
+                            <label for="filterSchoolYear">School Year</label>
+                            <select id="filterSchoolYear" class="form-select">
+                                <option value="">All Years</option>
+                                <option value="2025-2026" selected>2025-2026</option>
+                                <option value="2024-2025">2024-2025</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-item">
+                            <label for="filterSchoolLevel">Level</label>
+                            <select id="filterSchoolLevel" class="form-select">
+                                <option value="">All Levels</option>
+                                <option value="Elementary">Elementary</option>
+                                <option value="Junior High School">Junior High School</option>
+                                <option value="Senior High School">Senior High School</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-item">
+                            <label for="filterGradeLevel">Grade Level</label>
+                            <select id="filterGradeLevel" class="form-select">
+                                <option value="">All Grades</option>
+                                <option value="1">Grade 1</option>
+                                <option value="2">Grade 2</option>
+                                <option value="3">Grade 3</option>
+                                <option value="4">Grade 4</option>
+                                <option value="5">Grade 5</option>
+                                <option value="6">Grade 6</option>
+                                <option value="7">Grade 7</option>
+                                <option value="8">Grade 8</option>
+                                <option value="9">Grade 9</option>
+                                <option value="10">Grade 10</option>
+                                <option value="11">Grade 11</option>
+                                <option value="12">Grade 12</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-item">
+                            <label for="filterStatus">Status</label>
+                            <select id="filterStatus" class="form-select">
+                                <option value="">All Status</option>
+                                <option value="1" selected>Active</option>
+                                <option value="0">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="actions-group">
+                        <button class="btn btn-primary" id="createSectionBtn">
+                            <i class="fas fa-plus"></i>
+                            Create Section
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Sections Grid -->
+                <div class="sections-grid" id="sectionsGrid">
+                    <!-- Section cards will be dynamically loaded here -->
+                    <div class="loading-state">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Loading sections...</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Create/Edit Section Modal -->
+    <div class="modal" id="sectionModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="sectionModalTitle">Create New Section</h2>
+                <button class="modal-close" id="closeSectionModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <form id="sectionForm">
+                    <input type="hidden" id="sectionId">
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="sectionName">Section Name <span class="required">*</span></label>
+                            <input type="text" id="sectionName" class="form-input" placeholder="e.g., St. Peter" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="schoolYear">School Year <span class="required">*</span></label>
+                            <input type="text" id="schoolYear" class="form-input" placeholder="e.g., 2025-2026" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="schoolLevel">School Level <span class="required">*</span></label>
+                            <select id="schoolLevel" class="form-select" required>
+                                <option value="">Select Level</option>
+                                <option value="Elementary">Elementary</option>
+                                <option value="Junior High School">Junior High School</option>
+                                <option value="Senior High School">Senior High School</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="gradeLevel">Grade Level <span class="required">*</span></label>
+                            <select id="gradeLevel" class="form-select" required>
+                                <option value="">Select Grade</option>
+                                <option value="1">Grade 1</option>
+                                <option value="2">Grade 2</option>
+                                <option value="3">Grade 3</option>
+                                <option value="4">Grade 4</option>
+                                <option value="5">Grade 5</option>
+                                <option value="6">Grade 6</option>
+                                <option value="7">Grade 7</option>
+                                <option value="8">Grade 8</option>
+                                <option value="9">Grade 9</option>
+                                <option value="10">Grade 10</option>
+                                <option value="11">Grade 11</option>
+                                <option value="12">Grade 12</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="strand">Strand (SHS Only)</label>
+                            <select id="strand" class="form-select">
+                                <option value="">None</option>
+                                <option value="STEM">STEM</option>
+                                <option value="ABM">ABM</option>
+                                <option value="HUMSS">HUMSS</option>
+                                <option value="GAS">GAS</option>
+                                <option value="TVL-ICT">TVL-ICT</option>
+                                <option value="TVL-HE">TVL-HE</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="maxCapacity">Maximum Capacity <span class="required">*</span></label>
+                            <input type="number" id="maxCapacity" class="form-input" value="40" min="1" max="100" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="adviserSelect">Section Adviser</label>
+                        <select id="adviserSelect" class="form-select">
+                            <option value="">No Adviser Assigned</option>
+                            <!-- Faculty options loaded dynamically -->
+                        </select>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" id="cancelSectionBtn">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="saveSectionBtn">
+                            <i class="fas fa-save"></i>
+                            Save Section
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Details Modal -->
+    <div class="modal modal-large" id="sectionDetailsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2 id="sectionDetailsTitle">Section Details</h2>
+                    <p class="section-subtitle" id="sectionDetailsSubtitle"></p>
+                </div>
+                <button class="modal-close" id="closeSectionDetailsModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Section Info -->
+                <div class="section-info-card">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">School Level:</span>
+                            <span class="info-value" id="detailSchoolLevel">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Grade Level:</span>
+                            <span class="info-value" id="detailGradeLevel">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Strand:</span>
+                            <span class="info-value" id="detailStrand">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Adviser:</span>
+                            <span class="info-value" id="detailAdviser">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Capacity:</span>
+                            <span class="info-value" id="detailCapacity">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">School Year:</span>
+                            <span class="info-value" id="detailSchoolYear">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <div class="tabs-container">
+                    <div class="tabs-header">
+                        <button class="tab-button active" data-tab="students">
+                            <i class="fas fa-user-graduate"></i>
+                            Students
+                        </button>
+                        <button class="tab-button" data-tab="subjects">
+                            <i class="fas fa-book"></i>
+                            Subjects
+                        </button>
+                    </div>
+
+                    <!-- Students Tab -->
+                    <div class="tab-content active" id="studentsTab">
+                        <div class="tab-actions">
+                            <div class="search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="searchStudents" placeholder="Search students...">
+                            </div>
+                            <button class="btn btn-primary btn-sm" id="addStudentBtn">
+                                <i class="fas fa-plus"></i>
+                                Add Student
+                            </button>
+                        </div>
+
+                        <div class="students-table-container">
+                            <table class="data-table" id="studentsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Student Number</th>
+                                        <th>Name</th>
+                                        <th>Status</th>
+                                        <th>Enrolled Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentsTableBody">
+                                    <!-- Students loaded dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Subjects Tab -->
+                    <div class="tab-content" id="subjectsTab">
+                        <div class="tab-actions">
+                            <button class="btn btn-primary btn-sm" id="addSubjectBtn">
+                                <i class="fas fa-plus"></i>
+                                Add Subject
+                            </button>
+                        </div>
+
+                        <div class="subjects-list" id="subjectsList">
+                            <!-- Subjects loaded dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Student Modal -->
+    <div class="modal" id="addStudentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Student to Section</h2>
+                <button class="modal-close" id="closeAddStudentModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Search and Filters -->
+                <div class="student-search-section">
+                    <div class="search-box-large">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="studentSearchInput" placeholder="Search by name or student number...">
+                    </div>
+                    
+                    <div class="search-filters">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="excludeValedictorian">
+                            <span>Exclude Valedictorian</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="excludeSalutatorian">
+                            <span>Exclude Salutatorian</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Search Results -->
+                <div class="search-results" id="studentSearchResults">
+                    <div class="empty-state">
+                        <i class="fas fa-search"></i>
+                        <p>Search for students to add to this section</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Subject Modal -->
+    <div class="modal" id="addSubjectModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Subject to Section</h2>
+                <button class="modal-close" id="closeAddSubjectModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <form id="addSubjectForm">
+                    <div class="form-group">
+                        <label for="subjectName">Subject Name <span class="required">*</span></label>
+                        <input type="text" id="subjectName" class="form-input" placeholder="Enter subject name" required>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" id="cancelSubjectBtn">Cancel</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus"></i>
+                            Add Subject
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shared JavaScript -->
+    <script src="../../js/shared/auth.js"></script>
+    <script src="../../js/shared/sidebar.js"></script>
+    
+    <!-- Page-specific JavaScript -->
+    <script src="/js/registrar/sections-management.js"></script>
+</body>
+</html>

@@ -1,0 +1,634 @@
+/* STUDENT PROFILE PAGE - PROFESSIONAL MAROON DESIGN */
+
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+}
+
+body { 
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; 
+    background: #f8f9fa;
+    min-height: 100vh;
+    color: #2c3e50;
+}
+
+.dashboard { 
+    display: flex; 
+    min-height: 100vh; 
+}
+
+.main-content { 
+    margin-left: 280px; 
+    flex: 1; 
+    padding: 2.5rem; 
+}
+
+/* PAGE HEADER */
+.page-header { 
+    margin-bottom: 2.5rem;
+}
+
+.page-header h1 { 
+    font-size: 2.25rem;
+    color: #1f2937;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.page-header p { 
+    color: #6b7280;
+    font-size: 1rem;
+}
+
+/* STATISTICS */
+.stats-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+    gap: 1.75rem; 
+    margin-bottom: 2.5rem; 
+}
+
+.stat-card { 
+    background: white; 
+    padding: 2rem; 
+    border-radius: 1rem; 
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06); 
+    animation: slideUp 0.4s ease;
+    transition: all 0.3s ease;
+    border-top: 5px solid #8B1425;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 120px;
+    height: 120px;
+    background: linear-gradient(135deg, rgba(139, 20, 37, 0.08) 0%, rgba(168, 47, 74, 0.04) 100%);
+    border-radius: 50%;
+    transform: translate(40px, -40px);
+}
+
+.stat-card:hover {
+    box-shadow: 0 8px 24px rgba(139, 20, 37, 0.12);
+    transform: translateY(-6px);
+}
+
+.stat-value { 
+    font-size: 2.75rem; 
+    font-weight: 700; 
+    color: #8B1425; 
+    margin-bottom: 0.75rem; 
+    letter-spacing: -1px;
+    position: relative;
+    z-index: 1;
+}
+
+.stat-label { 
+    font-size: 0.95rem; 
+    color: #718096; 
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    position: relative;
+    z-index: 1;
+}
+
+/* SEARCH BAR */
+.search-bar { 
+    background: white; 
+    padding: 1.5rem; 
+    border-radius: 1rem; 
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06); 
+    margin-bottom: 2rem; 
+    display: flex; 
+    gap: 1rem;
+}
+
+.search-input { 
+    flex: 1; 
+    padding: 0.85rem; 
+    border: 2px solid #e5e7eb; 
+    border-radius: 0.5rem; 
+    font-size: 1rem; 
+    transition: all 0.3s ease;
+}
+
+.search-input:hover {
+    border-color: #8B1425;
+}
+
+.search-input:focus { 
+    outline: none; 
+    border-color: #8B1425; 
+    box-shadow: 0 0 0 3px rgba(139, 20, 37, 0.1);
+}
+
+/* FILTERS */
+.filters { 
+    background: white; 
+    padding: 2rem; 
+    border-radius: 1rem; 
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06); 
+    margin-bottom: 2rem; 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+    gap: 1.5rem;
+}
+
+.filter-group { 
+    display: flex; 
+    flex-direction: column; 
+}
+
+.filter-group label { 
+    font-size: 0.9rem; 
+    font-weight: 600; 
+    color: #374151; 
+    margin-bottom: 0.5rem;
+}
+
+.filter-group select { 
+    padding: 0.75rem; 
+    border: 2px solid #e5e7eb; 
+    border-radius: 0.5rem; 
+    font-size: 0.95rem; 
+    transition: all 0.3s ease;
+    background: white;
+    cursor: pointer;
+}
+
+.filter-group select:hover {
+    border-color: #8B1425;
+}
+
+.filter-group select:focus {
+    outline: none;
+    border-color: #8B1425;
+    box-shadow: 0 0 0 3px rgba(139, 20, 37, 0.1);
+}
+
+/* TABLE CONTAINER */
+.table-container { 
+    background: white; 
+    border-radius: 1rem; 
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06); 
+    overflow: hidden; 
+}
+
+.table { 
+    width: 100%; 
+    border-collapse: collapse; 
+}
+
+.table thead { 
+    background: linear-gradient(135deg, #8B1425 0%, #A82F4A 100%);
+    color: white;
+}
+
+.table th { 
+    padding: 1.25rem; 
+    text-align: left; 
+    font-weight: 700; 
+    font-size: 0.9rem; 
+    letter-spacing: 0.3px;
+}
+
+.table td { 
+    padding: 1.25rem; 
+    border-bottom: 1px solid #e5e7eb; 
+    font-size: 0.95rem; 
+    transition: background-color 0.2s ease;
+}
+
+.table tbody tr:hover { 
+    background: #f9fafb; 
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* BADGES */
+.badge { 
+    display: inline-block; 
+    padding: 0.35rem 0.85rem; 
+    border-radius: 20px; 
+    font-size: 0.8rem; 
+    font-weight: 600;
+}
+
+.badge-enrolled { 
+    background: #d1fae5; 
+    color: #065f46; 
+}
+
+.badge-completed { 
+    background: #dbeafe; 
+    color: #1e40af; 
+}
+
+.badge-transferred_out { 
+    background: #fef3c7; 
+    color: #92400e; 
+}
+
+.badge-dropped { 
+    background: #fee2e2; 
+    color: #991b1b; 
+}
+
+.badge-graduated { 
+    background: #e0e7ff; 
+    color: #5b21b6; 
+}
+
+.badge-jhs { 
+    background: #dbeafe; 
+    color: #1e40af; 
+}
+
+.badge-shs { 
+    background: #e0e7ff; 
+    color: #5b21b6; 
+}
+
+/* ACTION BUTTONS */
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.btn { 
+    padding: 0.6rem 1.2rem; 
+    border-radius: 0.5rem; 
+    border: none; 
+    cursor: pointer; 
+    font-weight: 600; 
+    transition: all 0.3s ease; 
+    display: inline-block;
+    text-decoration: none;
+    font-size: 0.85rem;
+}
+
+.btn-sm { 
+    padding: 0.5rem 1rem; 
+    font-size: 0.8rem; 
+}
+
+.btn-primary { 
+    background: linear-gradient(135deg, #8B1425 0%, #A82F4A 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(139, 20, 37, 0.2);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #6B0F1E 0%, #8B2332 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 20, 37, 0.3);
+}
+
+/* STATES */
+.loading { 
+    text-align: center; 
+    padding: 3rem; 
+    color: #6b7280; 
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.empty-state { 
+    text-align: center; 
+    padding: 3rem; 
+    color: #6b7280; 
+    font-size: 1rem;
+}
+
+.hidden { 
+    display: none; 
+}
+
+/* MODAL */
+/* Modal overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    overflow-y: auto;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+}
+
+/* Modal */
+.modal {
+    background: white;
+    max-width: 900px;
+    margin: 2rem auto;
+    border-radius: 1rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    animation: slideUp 0.3s ease;
+}
+
+.modal-overlay.active .modal {
+    transform: translateY(0);
+}
+
+/* Modal header */
+.modal-header {
+    padding: 2rem;
+    border-bottom: 2px solid #f0f0f0;
+    background: linear-gradient(135deg, #8B1425 0%, #A82F4A 100%);
+}
+
+.modal-title {
+    font-size: 1.5rem;
+    color: white;
+    font-weight: 700;
+}
+
+.modal-title {
+    font-weight: 700;
+    font-size: 1.7rem;
+    letter-spacing: -0.4px;
+    user-select: none;
+}
+
+.close-btn {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    border-radius: 50%;
+    width: 38px;
+    height: 38px;
+    font-size: 1.25rem;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background 0.3s ease;
+}
+
+.close-btn:hover {
+    background: white;
+    color: var(--maroon-primary);
+    transform: rotate(90deg);
+}
+
+/* Modal body */
+.modal-body {
+    padding: 2rem;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+/* Input groups container */
+.form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.form-group {
+    flex: 1 1 30%;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: #8B0000;
+    display: block;
+    margin-bottom: 0.4rem;
+    font-size: 0.95rem;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.55rem 0.75rem;
+    border: 1.5px solid #ccc;
+    border-radius: 8px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    font-size: 1rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.form-group input:focus {
+    border-color: #8B0000;
+    box-shadow: 0 0 6px rgba(139,0,0,0.3);
+    outline: none;
+}
+
+/* Checkbox in modal */
+#filterHonorRoll {
+    cursor: pointer;
+    margin-right: 0.5rem;
+}
+
+/* Labels for checkboxes */
+label[for="filterHonorRoll"] {
+    font-weight: 700;
+    color: #8B0000;
+    user-select: none;
+}
+
+/* Scrollable containers */
+.student-list-container,
+.enrolled-students-container {
+    background: #fefefe;
+    max-height: 320px;
+    overflow-y: auto;
+    padding: 1rem;
+    border: 2px solid #dbaf37;
+    border-radius: 1rem;
+}
+
+/* Student item */
+.student-item-modern {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: white;
+    border: 2px solid #ddd;
+    border-radius: 0.8rem;
+    padding: 0.6rem 1rem;
+    margin-bottom: 0.7rem;
+    cursor: pointer;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.student-item-modern:hover {
+    border-color: #8B0000;
+    box-shadow: 0 4px 8px rgba(139, 0, 0, 0.2);
+}
+
+.student-info-modern {
+    display: flex;
+    flex-direction: column;
+}
+
+.student-name-modern {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--maroon-primary);
+}
+
+.student-meta-modern {
+    font-size: 0.85rem;
+    color: #555;
+}
+
+/* Checkmark */
+.checkmark-modern {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2px solid #dbaf37;
+    background: #f9f3d1;
+    color: #8B0000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 800;
+    opacity: 0.5;
+}
+
+.student-checkbox-modern:checked + .checkmark-modern {
+    opacity: 1;
+}
+
+/* Enrolled students table */
+.enrolled-students-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.enrolled-students-table th {
+    background: var(--maroon-primary);
+    color: white;
+    font-weight: 700;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+}
+
+.enrolled-students-table td {
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid #ddd;
+    font-size: 0.95rem;
+    color: #444;
+}
+
+.enrolled-students-table tr:hover {
+    background: #f9f5e7;
+}
+
+.enrolled-students-table .remove-btn {
+    background: #d63636;
+    color: white;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: background-color 0.3s;
+}
+
+.enrolled-students-table .remove-btn:hover {
+    background: #a12121;
+}
+
+/* Modal footer */
+.modal-footer {
+    padding: 1.5rem 2rem;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    background: #f9fafb;
+}
+
+.btn-add-students {
+    background: var(--gradient-gold);
+    color: var(--maroon-primary);
+    font-weight: 700;
+    font-size: 1.05rem;
+    padding: 0.85rem 2.5rem;
+    border: none;
+    border-radius: 1.5rem;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-add-students:hover {
+    background: #b8970c;
+}
+
+.btn-close-modal {
+    background: var(--maroon-primary);
+    color: white;
+    font-weight: 700;
+    font-size: 1.05rem;
+    padding: 0.85rem 3rem;
+    border: none;
+    border-radius: 1.5rem;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-close-modal:hover {
+    background: #5e0606;
+}
+
+/* Scrollbar styling for lists */
+.student-list-container::-webkit-scrollbar,
+.enrolled-students-container::-webkit-scrollbar {
+    width: 9px;
+}
+
+.student-list-container::-webkit-scrollbar-track,
+.enrolled-students-container::-webkit-scrollbar-track {
+    background: #f4ecd3;
+    border-radius: 8px;
+}
+
+.student-list-container::-webkit-scrollbar-thumb,
+.enrolled-students-container::-webkit-scrollbar-thumb {
+    background: var(--maroon-primary);
+    border-radius: 8px;
+}
+
+.student-list-container::-webkit-scrollbar-thumb:hover,
+.enrolled-students-container::-webkit-scrollbar-thumb:hover {
+    background: var(--gold-dark);
+}
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+/* Responsive fixes */
+@media (max-width: 768px) {
+    .modal {
+        width: 95%;
+        max-width: 95%;
+        height: 90vh;
+        border-radius: 1rem;
+    }
+    
+    .form-row {
+        flex-direction: column;
+    }
+}

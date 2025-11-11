@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Official Registration Form</title>
+    <link rel="stylesheet" href="/css/accounting/registration-form.css">
+</head>
+<body>
+    <div id="loading" class="loading">Loading registration form...</div>
+    
+    <div id="registrationForm" class="form-container hidden">
+        <!-- School Header -->
+        <div class="form-header">
+            <div class="school-info">
+                <h1>🎓 ENROLLMENT SYSTEM</h1>
+                <h2>Official Registration Form</h2>
+                <p class="school-year">School Year: <span id="schoolYear">2025-2026</span></p>
+            </div>
+            <div class="form-number">
+                <strong>No. <span id="formNumber">----</span></strong>
+            </div>
+        </div>
+
+        <!-- Student Information -->
+        <div class="info-section">
+            <table class="info-table">
+                <tr>
+                    <td><strong>Student ID:</strong> <span id="studentId">----</span></td>
+                    <td><strong>Date:</strong> <span id="currentDate">----</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Student Name:</strong> <span id="studentName">----</span></td>
+                    <td><strong>A.Y.:</strong> <span id="academicYear">----</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Course/Major:</strong> <span id="courseMajor">----</span></td>
+                    <td><strong>Semester:</strong> <span id="semester">1</span></td>
+                </tr>
+                <tr>
+                    <td colspan="2"><strong>Year Level:</strong> <span id="yearLevel">----</span></td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Subject Loads Table -->
+        <div class="subjects-section">
+            <h3 class="section-title">SUBJECT LOADS</h3>
+            <table class="subjects-table">
+                <thead>
+                    <tr>
+                        <th>Section Subject</th>
+                        <th>Description</th>
+                        <th>Units</th>
+                        <th>Hours Days</th>
+                        <th>Time</th>
+                        <th>Room</th>
+                    </tr>
+                </thead>
+                <tbody id="subjectsBody">
+                    <!-- Subjects will be inserted here -->
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="2" style="text-align: right;"><strong>TOTAL</strong></td>
+                        <td><strong id="totalUnits">0</strong></td>
+                        <td colspan="3"></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- Miscellaneous Fees -->
+        <div class="fees-section">
+            <h3 class="section-title">MISCELLANEOUS FEES</h3>
+            <table class="fees-table">
+                <thead>
+                    <tr>
+                        <th>Miscellaneous Item</th>
+                        <th>Amount</th>
+                        <th>Miscellaneous Item</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody id="feesBody">
+                    <!-- Fees will be inserted here -->
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" style="text-align: right;"><strong>Total Amount:</strong></td>
+                        <td><strong id="totalMiscFees">0.00</strong></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- Registered Stamp -->
+        <div class="registered-section">
+            <div class="registered-stamp">
+                <h2>REGISTERED</h2>
+                <p><strong>SIGNATURE/DATE:</strong> <span id="registeredDate">----</span></p>
+                <p class="note">NOTE: PLEASE REVIEW YOUR OFFICIAL ENROLLMENT FORM AND COMPARE IT WITH THE PREFORMATTED FORMS. ANY DISCREPANCIES MUST BE REPORTED IMMEDIATELY TO THE OFFICE.</p>
+            </div>
+        </div>
+
+        <!-- Assessment Section -->
+        <div class="assessment-section">
+            <h3 class="section-title">ASSESSMENT</h3>
+            
+            <div class="assessment-grid">
+                <!-- Left Column -->
+                <div class="assessment-left">
+                    <div class="assessment-row">
+                        <span class="label">Tuition Fee Rate:</span>
+                        <span class="value" id="tuitionRate">0.00</span>
+                    </div>
+                    <div class="assessment-row">
+                        <span class="label">Mode of Payment:</span>
+                        <span class="value" id="modeOfPayment">----</span>
+                    </div>
+                    <div class="assessment-row">
+                        <span class="label">Payment Scheme:</span>
+                    </div>
+                    <div class="assessment-row indent">
+                        <span class="label">Down:</span>
+                        <span class="value" id="downPayment">0.00</span>
+                    </div>
+                    <div class="assessment-row indent">
+                        <span class="label">Monthly (As):</span>
+                        <span class="value" id="monthlyPayment">0.00</span>
+                    </div>
+                </div>
+
+                <!-- Middle Column -->
+                <div class="assessment-middle">
+                    <div class="assessment-row">
+                        <span class="label">Tuition Fee:</span>
+                        <span class="value" id="tuitionFee">0.00</span>
+                    </div>
+                    <div class="assessment-row">
+                        <span class="label">Miscellaneous Fee:</span>
+                        <span class="value" id="miscFee">0.00</span>
+                    </div>
+                    <div class="assessment-row">
+                        <span class="label">Laboratory Fee:</span>
+                        <span class="value" id="labFee">0.00</span>
+                    </div>
+                    <div class="assessment-row">
+                        <span class="label">Laboratory Deposit:</span>
+                        <span class="value" id="labDeposit">0.00</span>
+                    </div>
+                    <div class="assessment-row">
+                        <span class="label">LESS</span>
+                    </div>
+                    <div class="assessment-row">
+                        <span class="label">Tuition Fee Discount:</span>
+                        <span class="value" id="tuitionDiscount">0.00</span>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="assessment-right">
+                    <div class="assessment-row">
+                        <span class="label">OLD ACCOUNTS</span>
+                    </div>
+                    <div class="assessment-row">
+                        <span class="label">A.Y.</span>
+                        <span class="label">Semester</span>
+                        <span class="label">Amount</span>
+                    </div>
+                    <div class="assessment-row" id="oldAccountsRow">
+                        <span class="value">- -</span>
+                        <span class="value">- -</span>
+                        <span class="value">0.00</span>
+                    </div>
+                    <div class="assessment-row">
+                        <span class="label">LESS</span>
+                    </div>
+                    <div class="assessment-row">
+                        <span class="label">Down payment:</span>
+                        <span class="value" id="downPaymentDeduct">0.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Assessment -->
+            <div class="total-assessment">
+                <div class="total-row">
+                    <span class="label">Assessment:</span>
+                    <span class="amount" id="totalAssessment">0.00</span>
+                </div>
+                <div class="total-row">
+                    <span class="label">Balance:</span>
+                    <span class="amount balance" id="totalBalance">0.00</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Student's Oath -->
+        <div class="oath-section">
+            <h4>STUDENT'S OATH</h4>
+            <p class="oath-text">
+                I, <strong id="oathName">____________________</strong>, shall abide by all the rules, regulations, policies, and standards now enforce or maybe promulgated by <strong>MSEUF</strong> from time to time. I agree to the cancellation of the subjects enrolled and or credit earned in subjects not officially pre-registered and loading or subjects. Likewise, I consider myself temporarily enrolled until all required credentials are submitted and payments are made.
+            </p>
+            <p class="oath-text">
+                This is to confirm that I am willing to abide by the following terms and conditions of this registration:
+            </p>
+            <ol class="oath-list">
+                <li>That the fees of which I am charged or were tentatively computed and subject to change awaiting final decision by the CHED.</li>
+                <li>Commission on Higher Education.</li>
+                <li>That I am willing to abide by whatever adjustments are necessary in the fees on the basis of the approved rates by the CHED.</li>
+            </ol>
+
+            <h4 style="margin-top: 1.5rem;">CONSENT AND AUTHORIZATION</h4>
+            <p class="consent-text">
+                I, <strong id="consentName">____________________</strong>, explicitly authorize and give my consent to Manuel S. Enverga University, its employees, faculty, any administrator(s), to collect, process, store, and share my personal data needed in the administration of my records and for the purposes of providing and improving/upgrades in its systems and processes, including but not limited to research, data analytics and automated processing.
+            </p>
+            <p class="consent-text">
+                This consent and authorization is valid as signed agreement and will continue to have effect throughout the duration of my enrollment, or existence of my records in the University.
+            </p>
+        </div>
+
+        <!-- Signature Section -->
+        <div class="signature-section">
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <label>Treasurer/Cashier</label>
+            </div>
+
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <label>Assessed by</label>
+            </div>
+
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <label>Registrar</label>
+            </div>
+
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <label>Student/Parent/Guardian</label>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="form-footer no-print">
+            <p><em>This is an official registration form. Please keep this for your records.</em></p>
+            <p>Generated on: <span id="generatedDate">----</span></p>
+        </div>
+
+        <!-- Print Actions -->
+        <div class="print-actions no-print">
+            <button onclick="window.print()" class="btn btn-primary">
+                🖨️ Print Form
+            </button>
+            <button onclick="confirmEnrollment()" class="btn btn-success">
+                ✅ Confirm Enrollment
+            </button>
+            <button onclick="window.close()" class="btn btn-secondary">
+                ✕ Close
+            </button>
+        </div>
+    </div>
+
+    <script src="/js/accounting/registration-form.js"></script>
+</body>
+</html>
