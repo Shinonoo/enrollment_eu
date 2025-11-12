@@ -9,7 +9,7 @@ const AdmissionModel = require('../models/admissionModel');
 const submitApplication = async (req, res) => {
     try {
         const {
-            first_name, middle_name, last_name, suffix,
+            lrn, first_name, middle_name, last_name, suffix,
             date_of_birth, gender,
             email, phone_number,
             street, barangay, city, province, zip_code,
@@ -48,6 +48,7 @@ const submitApplication = async (req, res) => {
         }
 
         const result = await AdmissionModel.createAdmission({
+            lrn,
             firstName: first_name,
             middleName: middle_name,
             lastName: last_name,
@@ -72,11 +73,15 @@ const submitApplication = async (req, res) => {
             applicationType: application_type
         });
 
+        if (req.body.guardians && Array.isArray(req.body.guardians)) {
+            await GuardianModel.addGuardians(result.insertId, req.body.guardians);
+        }
+
         res.status(201).json({
-            success: true,
-            message: 'Application submitted successfully',
-            applicationId: result.insertId,
-            referenceNumber: `APP-${result.insertId.toString().padStart(6, '0')}`
+        success: true,
+        message: 'Application submitted successfully',
+        applicationId: result.insertId,
+        referenceNumber: `APP-${result.insertId.toString().padStart(6, '0')}`
         });
 
     } catch (error) {
@@ -131,10 +136,13 @@ const getApplicationById = async (req, res) => {
                 message: 'Application not found'
             });
         }
+        // Fetch guardians linked to this application
+        const guardians = await GuardianModel.getGuardiansByApplicationId(id);
 
         res.json({
             success: true,
-            application
+            application,
+            guardians
         });
 
     } catch (error) {
@@ -193,6 +201,7 @@ const updateApplication = async (req, res) => {
     try {
         const { id } = req.params;
         const {
+            lrn,
             first_name, middle_name, last_name, suffix,
             date_of_birth, gender,
             email, phone_number,
@@ -203,6 +212,7 @@ const updateApplication = async (req, res) => {
         } = req.body;
 
         await AdmissionModel.updateApplication(id, {
+            lrn,
             firstName: first_name,
             middleName: middle_name,
             lastName: last_name,
@@ -305,5 +315,6 @@ module.exports = {
     updateApplicationStatus,
     updateApplication,
     getStatistics,
-    sendToAccountant
+    sendToAccountant,
+    
 };

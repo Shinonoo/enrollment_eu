@@ -1,475 +1,891 @@
-const db = require('../config/database');
+const SectionModel = require('../models/sectionModel');
 
 // Get all sections with filtering
+// Get all sections with filtering - STATUS REMOVED
 exports.getAllSections = async (req, res) => {
-  try {
-    const { school_year, school_level, grade_level, is_active } = req.query;
-    
-    let query = `
-      SELECT 
-        s.*,
-        f.first_name as adviser_first_name,
-        f.last_name as adviser_last_name,
-        COUNT(DISTINCT ss.student_id) as enrolled_students
-      FROM sections s
-      LEFT JOIN faculty f ON s.adviser_id = f.faculty_id
-      LEFT JOIN student_sections ss ON s.section_id = ss.section_id AND ss.is_current = 1
-      WHERE 1=1
-    `;
-    
-    const params = [];
-    
-    if (school_year) {
-      query += ' AND s.school_year = ?';
-      params.push(school_year);
+    try {
+        console.log('📥 Request query params:', req.query);
+        
+        const filters = {
+            school_year: req.query.school_year || '',
+            school_level: req.query.school_level || '',
+            grade_level: req.query.grade_level || ''
+            // ✅ is_active REMOVED
+        };
+        
+        console.log('🔍 Controller: Applying filters:', filters);
+        
+        const sections = await SectionModel.getSectionsWithFilters(filters);
+        
+        console.log('✅ Controller: Returning', sections.length, 'sections');
+        
+        res.json({
+            success: true,
+            sections: sections || [],
+            filters: filters
+        });
+    } catch (error) {
+        console.error('❌ Error fetching sections:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching sections',
+            error: error.message
+        });
     }
-    
-    if (school_level) {
-      query += ' AND s.school_level = ?';
-      params.push(school_level);
+};
+
+// Get section progression map
+exports.getProgressionMap = async (req, res) => {
+    try {
+        const progressionMap = await SectionModel.getProgressionMap();
+        
+        res.json({
+            success: true,
+            progressionMap: progressionMap || {}
+        });
+    } catch (error) {
+        console.error('❌ Error fetching progression map:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching progression map',
+            error: error.message
+        });
     }
-    
-    if (grade_level) {
-      query += ' AND s.grade_level = ?';
-      params.push(grade_level);
+};
+
+// Get sections by grade level
+exports.getSectionsByGrade = async (req, res) => {
+    try {
+        const { gradeLevel } = req.params;
+        
+        if (!gradeLevel) {
+            return res.status(400).json({
+                success: false,
+                message: 'Grade level is required'
+            });
+        }
+        
+        const sections = await SectionModel.getSectionsByGrade(gradeLevel);
+        
+        res.json({
+            success: true,
+            sections: sections || []
+        });
+    } catch (error) {
+        console.error('❌ Error fetching sections by grade:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching sections',
+            error: error.message
+        });
     }
-    
-    if (is_active !== undefined) {
-      query += ' AND s.is_active = ?';
-      params.push(is_active);
-    }
-    
-    query += ' GROUP BY s.section_id ORDER BY s.grade_level, s.section_name';
-    
-    const [sections] = await db.query(query, params);
-    
-    res.json({
-      success: true,
-      sections
-    });
-  } catch (error) {
-    console.error('Error fetching sections:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching sections',
-      error: error.message
-    });
-  }
 };
 
 // Get single section with details
 exports.getSectionDetails = async (req, res) => {
-  try {
-    const { sectionId } = req.params;
-    
-    // Get section info
-    const [sections] = await db.query(`
-      SELECT 
-        s.*,
-        f.first_name as adviser_first_name,
-        f.last_name as adviser_last_name,
-        f.email as adviser_email
-      FROM sections s
-      LEFT JOIN faculty f ON s.adviser_id = f.faculty_id
-      WHERE s.section_id = ?
-    `, [sectionId]);
-    
-    if (sections.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'Section not found'
-      });
+    try {
+        const { sectionId } = req.params;
+        
+        if (!sectionId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Section ID is required'
+            });
+        }
+        
+        const section = await SectionModel.getSectionWithDetails(sectionId);
+        
+        if (!section) {
+            return res.status(404).json({
+                success: false,
+                message: 'Section not found'
+            });
+        }
+        
+        res.json({
+            success: true,
+            section
+        });
+    } catch (error) {
+        console.error('❌ Error fetching section details:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching section details',
+            error: error.message
+        });
     }
-    
-    const section = sections[0];
-    
-    // Get enrolled students
-    const [students] = await db.query(`
-      SELECT 
-        st.*,
-        ss.enrollment_date,
-        ss.enrolled_date
-      FROM student_sections ss
-      JOIN students st ON ss.student_id = st.student_id
-      WHERE ss.section_id = ? AND ss.is_current = 1
-      ORDER BY st.last_name, st.first_name
-    `, [sectionId]);
-    
-    // Get section subjects
-    const [subjects] = await db.query(`
-      SELECT *
-      FROM section_subjects
-      WHERE section_id = ? AND is_active = 1
-    `, [sectionId]);
-    
-    res.json({
-      success: true,
-      section: {
-        ...section,
-        students,
-        subjects
-      }
-    });
-  } catch (error) {
-    console.error('Error fetching section details:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching section details',
-      error: error.message
-    });
-  }
 };
 
 // Create new section
 exports.createSection = async (req, res) => {
-  try {
-    const { 
-      section_name, 
-      school_level, 
-      grade_level, 
-      strand,
-      school_year, 
-      adviser_id, 
-      max_capacity 
-    } = req.body;
-    
-    const [result] = await db.query(`
-      INSERT INTO sections 
-      (section_name, school_level, grade_level, strand, school_year, adviser_id, max_capacity)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `, [section_name, school_level, grade_level, strand || null, school_year, adviser_id || null, max_capacity || 40]);
-    
-    res.status(201).json({
-      success: true,
-      message: 'Section created successfully',
-      section_id: result.insertId
-    });
-  } catch (error) {
-    console.error('Error creating section:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error creating section',
-      error: error.message
-    });
-  }
+    try {
+        const { section_name, school_level, grade_level, school_year } = req.body;
+        
+        // Validation
+        if (!section_name || !school_level || !grade_level || !school_year) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing required fields: section_name, school_level, grade_level, school_year'
+            });
+        }
+        
+        const sectionId = await SectionModel.createSection(req.body);
+        
+        res.status(201).json({
+            success: true,
+            message: 'Section created successfully',
+            section_id: sectionId
+        });
+    } catch (error) {
+        console.error('❌ Error creating section:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error creating section',
+            error: error.message
+        });
+    }
 };
 
 // Update section
 exports.updateSection = async (req, res) => {
-  try {
-    const { sectionId } = req.params;
-    const { 
-      section_name, 
-      school_level, 
-      grade_level, 
-      strand,
-      adviser_id, 
-      max_capacity,
-      is_active
-    } = req.body;
-    
-    await db.query(`
-      UPDATE sections 
-      SET section_name = ?, 
-          school_level = ?, 
-          grade_level = ?, 
-          strand = ?,
-          adviser_id = ?, 
-          max_capacity = ?,
-          is_active = ?
-      WHERE section_id = ?
-    `, [section_name, school_level, grade_level, strand || null, adviser_id || null, max_capacity, is_active, sectionId]);
-    
-    res.json({
-      success: true,
-      message: 'Section updated successfully'
-    });
-  } catch (error) {
-    console.error('Error updating section:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error updating section',
-      error: error.message
-    });
-  }
+    try {
+        const { sectionId } = req.params;
+        
+        if (!sectionId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Section ID is required'
+            });
+        }
+        
+        const updated = await SectionModel.updateSection(sectionId, req.body);
+        
+        if (!updated) {
+            return res.status(404).json({
+                success: false,
+                message: 'Section not found'
+            });
+        }
+        
+        res.json({
+            success: true,
+            message: 'Section updated successfully'
+        });
+    } catch (error) {
+        console.error('❌ Error updating section:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error updating section',
+            error: error.message
+        });
+    }
+};
+
+// Patch section (partial update)
+exports.patchSection = async (req, res) => {
+    try {
+        const { sectionId } = req.params;
+        
+        if (!sectionId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Section ID is required'
+            });
+        }
+        
+        if (Object.keys(req.body).length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'No fields to update'
+            });
+        }
+        
+        const updated = await SectionModel.patchSection(sectionId, req.body);
+        
+        if (!updated) {
+            return res.status(404).json({
+                success: false,
+                message: 'Section not found'
+            });
+        }
+        
+        res.json({
+            success: true,
+            message: 'Section updated successfully'
+        });
+    } catch (error) {
+        console.error('❌ Error patching section:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error updating section',
+            error: error.message
+        });
+    }
+};
+
+// Delete section
+exports.deleteSection = async (req, res) => {
+    try {
+        const { sectionId } = req.params;
+        
+        if (!sectionId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Section ID is required'
+            });
+        }
+        
+        const deleted = await SectionModel.deleteSection(sectionId);
+        
+        if (!deleted) {
+            return res.status(404).json({
+                success: false,
+                message: 'Section not found'
+            });
+        }
+        
+        res.json({
+            success: true,
+            message: 'Section deleted successfully'
+        });
+    } catch (error) {
+        console.error('❌ Error deleting section:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error deleting section',
+            error: error.message
+        });
+    }
 };
 
 // Add student to section
 exports.addStudentToSection = async (req, res) => {
-  try {
-    const { sectionId } = req.params;
-    const { student_id, school_year, enrollment_date } = req.body;
-    
-    // Check if section has capacity
-    const [section] = await db.query(`
-      SELECT max_capacity, current_capacity FROM sections WHERE section_id = ?
-    `, [sectionId]);
-    
-    if (section.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'Section not found'
-      });
+    try {
+        const { sectionId } = req.params;
+        const { student_id, school_year, enrollment_date } = req.body;
+        
+        // Validation
+        if (!sectionId || !student_id || !school_year) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing required fields: sectionId, student_id, school_year'
+            });
+        }
+        
+        await SectionModel.addStudentToSection(
+            sectionId, 
+            student_id, 
+            school_year, 
+            enrollment_date || new Date().toISOString().split('T')[0]
+        );
+        
+        res.json({
+            success: true,
+            message: 'Student added to section successfully'
+        });
+    } catch (error) {
+        console.error('❌ Error adding student to section:', error);
+        res.status(400).json({
+            success: false,
+            message: error.message || 'Error adding student to section'
+        });
     }
-    
-    if (section[0].current_capacity >= section[0].max_capacity) {
-      return res.status(400).json({
-        success: false,
-        message: 'Section is already at maximum capacity'
-      });
-    }
-    
-    // Check if student is already in a section for this school year
-    const [existing] = await db.query(`
-      SELECT * FROM student_sections 
-      WHERE student_id = ? AND school_year = ? AND is_current = 1
-    `, [student_id, school_year]);
-    
-    if (existing.length > 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Student is already enrolled in a section for this school year'
-      });
-    }
-    
-    // Add student to section
-    await db.query(`
-      INSERT INTO student_sections (student_id, section_id, school_year, enrolled_date, enrollment_date)
-      VALUES (?, ?, ?, ?, ?)
-    `, [student_id, sectionId, school_year, enrollment_date || new Date(), enrollment_date || new Date()]);
-    
-    // Update section capacity
-    await db.query(`
-      UPDATE sections 
-      SET current_capacity = current_capacity + 1 
-      WHERE section_id = ?
-    `, [sectionId]);
-    
-    res.json({
-      success: true,
-      message: 'Student added to section successfully'
-    });
-  } catch (error) {
-    console.error('Error adding student to section:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error adding student to section',
-      error: error.message
-    });
-  }
 };
 
 // Remove student from section
 exports.removeStudentFromSection = async (req, res) => {
-  try {
-    const { sectionId, studentId } = req.params;
-    
-    // Mark as not current
-    await db.query(`
-      UPDATE student_sections 
-      SET is_current = 0 
-      WHERE section_id = ? AND student_id = ?
-    `, [sectionId, studentId]);
-    
-    // Update section capacity
-    await db.query(`
-      UPDATE sections 
-      SET current_capacity = current_capacity - 1 
-      WHERE section_id = ?
-    `, [sectionId]);
-    
-    res.json({
-      success: true,
-      message: 'Student removed from section successfully'
-    });
-  } catch (error) {
-    console.error('Error removing student from section:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error removing student from section',
-      error: error.message
-    });
-  }
+    try {
+        const { sectionId, studentId } = req.params;
+        
+        if (!sectionId || !studentId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Section ID and Student ID are required'
+            });
+        }
+        
+        await SectionModel.removeStudentFromSection(sectionId, studentId);
+        
+        res.json({
+            success: true,
+            message: 'Student removed from section successfully'
+        });
+    } catch (error) {
+        console.error('❌ Error removing student from section:', error);
+        res.status(400).json({
+            success: false,
+            message: error.message || 'Error removing student from section'
+        });
+    }
 };
 
 // Add subject to section
 exports.addSubjectToSection = async (req, res) => {
-  try {
-    const { sectionId } = req.params;
-    const { subject_name } = req.body;
-    
-    await db.query(`
-      INSERT INTO section_subjects (section_id, subject_name)
-      VALUES (?, ?)
-    `, [sectionId, subject_name]);
-    
-    res.json({
-      success: true,
-      message: 'Subject added to section successfully'
-    });
-  } catch (error) {
-    console.error('Error adding subject to section:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error adding subject to section',
-      error: error.message
-    });
-  }
+    try {
+        const { sectionId } = req.params;
+        const { subject_name } = req.body;
+        
+        if (!sectionId || !subject_name) {
+            return res.status(400).json({
+                success: false,
+                message: 'Section ID and subject name are required'
+            });
+        }
+        
+        await SectionModel.addSubjectToSection(sectionId, subject_name);
+        
+        res.json({
+            success: true,
+            message: 'Subject added to section successfully'
+        });
+    } catch (error) {
+        console.error('❌ Error adding subject to section:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error adding subject to section',
+            error: error.message
+        });
+    }
 };
 
 // Remove subject from section
 exports.removeSubjectFromSection = async (req, res) => {
-  try {
-    const { sectionId, subjectId } = req.params;
-    
-    await db.query(`
-      UPDATE section_subjects 
-      SET is_active = 0 
-      WHERE section_id = ? AND id = ?
-    `, [sectionId, subjectId]);
-    
-    res.json({
-      success: true,
-      message: 'Subject removed from section successfully'
-    });
-  } catch (error) {
-    console.error('Error removing subject from section:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error removing subject from section',
-      error: error.message
-    });
-  }
+    try {
+        const { sectionId, subjectId } = req.params;
+        
+        if (!sectionId || !subjectId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Section ID and Subject ID are required'
+            });
+        }
+        
+        await SectionModel.removeSubjectFromSection(sectionId, subjectId);
+        
+        res.json({
+            success: true,
+            message: 'Subject removed from section successfully'
+        });
+    } catch (error) {
+        console.error('❌ Error removing subject from section:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error removing subject from section',
+            error: error.message
+        });
+    }
+};
+
+// Promote section
+exports.promoteSection = async (req, res) => {
+    try {
+        const { sectionId } = req.params;
+        
+        if (!sectionId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Section ID is required'
+            });
+        }
+        
+        const result = await SectionModel.promoteSection(sectionId);
+        
+        res.json({
+            success: true,
+            message: `${result.promotedCount} students promoted to ${result.nextSectionName}`,
+            promoted_count: result.promotedCount
+        });
+    } catch (error) {
+        console.error('❌ Error promoting section:', error);
+        res.status(400).json({
+            success: false,
+            message: error.message || 'Error promoting section'
+        });
+    }
 };
 
 // Search available students
 exports.searchAvailableStudents = async (req, res) => {
-  try {
-    const { query, school_year, school_level, grade_level, exclude_valedictorian, exclude_salutatorian } = req.query;
-    
-    let sql = `
-      SELECT 
-        s.student_id,
-        s.student_number,
-        s.first_name,
-        s.middle_name,
-        s.last_name,
-        s.suffix,
-        s.school_level,
-        s.current_grade_level,
-        s.strand,
-        s.is_valedictorian,
-        s.is_salutatorian,
-        ss.section_id as current_section_id
-      FROM students s
-      LEFT JOIN student_sections ss ON s.student_id = ss.student_id 
-        AND ss.is_current = 1 
-        AND ss.school_year = ?
-      WHERE s.enrollment_status = 'enrolled'
-    `;
-    
-    const params = [school_year];
-    
-    if (school_level) {
-      sql += ' AND s.school_level = ?';
-      params.push(school_level);
+    try {
+        const filters = {
+            query: req.query.query || '',
+            school_year: req.query.school_year || new Date().getFullYear() + '-' + (new Date().getFullYear() + 1),
+            school_level: req.query.school_level || '',
+            grade_level: req.query.grade_level || '',
+            exclude_valedictorian: req.query.exclude_valedictorian || 'false',
+            exclude_salutatorian: req.query.exclude_salutatorian || 'false'
+        };
+        
+        const students = await SectionModel.searchAvailableStudents(filters);
+        
+        res.json({
+            success: true,
+            students: students || []
+        });
+    } catch (error) {
+        console.error('❌ Error searching students:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error searching students',
+            error: error.message
+        });
     }
-    
-    if (grade_level) {
-      sql += ' AND s.current_grade_level = ?';
-      params.push(grade_level);
-    }
-    
-    if (exclude_valedictorian === 'true') {
-      sql += ' AND s.is_valedictorian = 0';
-    }
-    
-    if (exclude_salutatorian === 'true') {
-      sql += ' AND s.is_salutatorian = 0';
-    }
-    
-    if (query) {
-      sql += ` AND (
-        s.first_name LIKE ? OR 
-        s.last_name LIKE ? OR 
-        s.student_number LIKE ? OR
-        CONCAT(s.first_name, ' ', s.last_name) LIKE ?
-      )`;
-      const searchTerm = `%${query}%`;
-      params.push(searchTerm, searchTerm, searchTerm, searchTerm);
-    }
-    
-    sql += ' ORDER BY s.last_name, s.first_name LIMIT 50';
-    
-    const [students] = await db.query(sql, params);
-    
-    res.json({
-      success: true,
-      students
-    });
-  } catch (error) {
-    console.error('Error searching students:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error searching students',
-      error: error.message
-    });
-  }
-};
-
-// Assign faculty to section
-exports.assignFacultyToSection = async (req, res) => {
-  try {
-    const { sectionId } = req.params;
-    const { faculty_id } = req.body;
-    
-    await db.query(`
-      UPDATE sections 
-      SET adviser_id = ? 
-      WHERE section_id = ?
-    `, [faculty_id, sectionId]);
-    
-    res.json({
-      success: true,
-      message: 'Faculty assigned as adviser successfully'
-    });
-  } catch (error) {
-    console.error('Error assigning faculty:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error assigning faculty',
-      error: error.message
-    });
-  }
 };
 
 // Get available faculty
 exports.getAvailableFaculty = async (req, res) => {
-  try {
-    const { department } = req.query;
-    
-    let query = 'SELECT * FROM faculty WHERE is_active = 1';
-    const params = [];
-    
-    if (department) {
-      query += ' AND (department = ? OR department = "Both")';
-      params.push(department);
+    try {
+        const { department } = req.query;
+        const faculty = await SectionModel.getAvailableFaculty(department);
+        
+        res.json({
+            success: true,
+            faculty: faculty || []
+        });
+    } catch (error) {
+        console.error('❌ Error fetching faculty:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching faculty',
+            error: error.message
+        });
     }
-    
-    query += ' ORDER BY last_name, first_name';
-    
-    const [faculty] = await db.query(query, params);
-    
-    res.json({
-      success: true,
-      faculty
-    });
-  } catch (error) {
-    console.error('Error fetching faculty:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching faculty',
-      error: error.message
-    });
-  }
 };
+
+// Assign faculty to section
+exports.assignFacultyToSection = async (req, res) => {
+    try {
+        const { sectionId } = req.params;
+        const { faculty_id } = req.body;
+        
+        if (!sectionId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Section ID is required'
+            });
+        }
+        
+        await SectionModel.patchSection(sectionId, { adviser_id: faculty_id || null });
+        
+        res.json({
+            success: true,
+            message: faculty_id ? 'Faculty assigned as adviser successfully' : 'Adviser removed successfully'
+        });
+    } catch (error) {
+        console.error('❌ Error assigning faculty:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error assigning faculty',
+            error: error.message
+        });
+    }
+};
+
+// Delete section
+exports.deleteSection = async (req, res) => {
+    try {
+        const { sectionId } = req.params;
+        
+        if (!sectionId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Section ID is required'
+            });
+        }
+        
+        const deleted = await SectionModel.deleteSection(sectionId);
+        
+        if (!deleted) {
+            return res.status(404).json({
+                success: false,
+                message: 'Section not found'
+            });
+        }
+        
+        res.json({
+            success: true,
+            message: 'Section deleted successfully'
+        });
+    } catch (error) {
+        console.error('❌ Error deleting section:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error deleting section',
+            error: error.message
+        });
+    }
+};
+
+// Get students in a section
+exports.getSectionStudents = async (req, res) => {
+    try {
+        const { sectionId } = req.params;
+        
+        console.log('📚 Getting students for section:', sectionId);
+        
+        if (!sectionId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Section ID is required'
+            });
+        }
+        
+        const students = await SectionModel.getSectionStudents(sectionId);
+        
+        console.log('✅ Found', students.length, 'students');
+        
+        res.json({
+            success: true,
+            students: students || []
+        });
+    } catch (error) {
+        console.error('❌ Error getting section students:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching students',
+            error: error.message
+        });
+    }
+};
+
+// Add student to section
+exports.addStudentToSection = async (req, res) => {
+    try {
+        const { sectionId } = req.params;
+        const { student_id, school_year, enrollment_date } = req.body;
+        
+        console.log('➕ Adding student to section:', { sectionId, student_id });
+        
+        if (!sectionId || !student_id) {
+            return res.status(400).json({
+                success: false,
+                message: 'Section ID and Student ID are required'
+            });
+        }
+        
+        const added = await SectionModel.addStudentToSection(sectionId, student_id, school_year, enrollment_date);
+        
+        if (!added) {
+            return res.status(400).json({
+                success: false,
+                message: 'Failed to add student to section'
+            });
+        }
+        
+        res.json({
+            success: true,
+            message: 'Student added to section successfully'
+        });
+    } catch (error) {
+        console.error('❌ Error adding student to section:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error adding student to section',
+            error: error.message
+        });
+    }
+};
+
+// Remove student from section
+exports.removeStudentFromSection = async (req, res) => {
+    try {
+        const { sectionId, studentId } = req.params;
+        
+        console.log('➖ Removing student from section:', { sectionId, studentId });
+        
+        if (!sectionId || !studentId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Section ID and Student ID are required'
+            });
+        }
+        
+        const removed = await SectionModel.removeStudentFromSection(sectionId, studentId);
+        
+        if (!removed) {
+            return res.status(404).json({
+                success: false,
+                message: 'Student not found in section'
+            });
+        }
+        
+        res.json({
+            success: true,
+            message: 'Student removed from section successfully'
+        });
+    } catch (error) {
+        console.error('❌ Error removing student from section:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error removing student from section',
+            error: error.message
+        });
+    }
+};
+
+// Get subjects for a section
+exports.getSectionSubjects = async (req, res) => {
+    try {
+        console.log('🔍 Step 1: Function called');
+        const { sectionId } = req.params;
+        console.log('🔍 Step 2: Section ID:', sectionId);
+        
+        const subjects = await SectionModel.getSectionSubjects(sectionId);
+        console.log('🔍 Step 3: Subjects retrieved:', subjects);
+        
+        res.json({
+            success: true,
+            subjects: subjects || []
+        });
+    } catch (error) {
+        console.error('❌ FULL ERROR:', error); // Log full error object
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching subjects',
+            error: error.message
+        });
+    }
+};
+
+
+// Add subject to section
+exports.addSubjectToSection = async (req, res) => {
+    try {
+        const { sectionId } = req.params;
+        const { subject_name } = req.body;
+        
+        console.log('➕ Adding subject to section:', { sectionId, subject_name });
+        
+        if (!sectionId || !subject_name) {
+            return res.status(400).json({
+                success: false,
+                message: 'Section ID and Subject Name are required'
+            });
+        }
+        
+        const added = await SectionModel.addSubjectToSection(sectionId, subject_name);
+        
+        if (!added) {
+            return res.status(400).json({
+                success: false,
+                message: 'Failed to add subject to section'
+            });
+        }
+        
+        res.json({
+            success: true,
+            message: 'Subject added to section successfully'
+        });
+    } catch (error) {
+        console.error('❌ Error adding subject to section:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error adding subject to section',
+            error: error.message
+        });
+    }
+};
+
+// Remove subject from section
+exports.removeSubjectFromSection = async (req, res) => {
+    try {
+        const { sectionId, subjectId } = req.params;
+        
+        console.log('➖ Removing subject from section:', { sectionId, subjectId });
+        
+        if (!sectionId || !subjectId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Section ID and Subject ID are required'
+            });
+        }
+        
+        const removed = await SectionModel.removeSubjectFromSection(sectionId, subjectId);
+        
+        if (!removed) {
+            return res.status(404).json({
+                success: false,
+                message: 'Subject not found in section'
+            });
+        }
+        
+        res.json({
+            success: true,
+            message: 'Subject removed from section successfully'
+        });
+    } catch (error) {
+        console.error('❌ Error removing subject from section:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error removing subject from section',
+            error: error.message
+        });
+    }
+};
+
+// Get available subjects for adding to section
+exports.getAvailableSubjects = async (req, res) => {
+    try {
+        const { sectionId } = req.params;
+        
+        console.log('📚 Getting available subjects for section:', sectionId);
+        
+        if (!sectionId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Section ID is required'
+            });
+        }
+        
+        const subjects = await SectionModel.getAvailableSubjectsForSection(sectionId);
+        
+        res.json({
+            success: true,
+            subjects: subjects || []
+        });
+    } catch (error) {
+        console.error('❌ Error getting available subjects:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching available subjects',
+            error: error.message
+        });
+    }
+};
+
+// ============================================
+// CURRICULUM MANAGEMENT
+// ============================================
+
+// Get available curricula for section
+exports.getAvailableCurricula = async (req, res) => {
+    try {
+        const { sectionId } = req.params;
+        
+        console.log('📚 Getting available curricula for section:', sectionId);
+        
+        // Get section details first
+        const section = await SectionModel.getSectionWithDetails(sectionId);
+        
+        if (!section) {
+            return res.status(404).json({
+                success: false,
+                message: 'Section not found'
+            });
+        }
+        
+        const curricula = await SectionModel.getAvailableCurricula(
+            section.school_level,
+            section.grade_level,
+            section.strand
+        );
+        
+        res.json({
+            success: true,
+            curricula: curricula || [],
+            current_curriculum_id: section.curriculum_id
+        });
+    } catch (error) {
+        console.error('❌ Error getting available curricula:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching curricula',
+            error: error.message
+        });
+    }
+};
+
+// Assign curriculum to section
+exports.assignCurriculum = async (req, res) => {
+    try {
+        const { sectionId } = req.params;
+        const { curriculum_id } = req.body;
+        
+        console.log('📚 Assigning curriculum to section:', { sectionId, curriculum_id });
+        
+        if (!curriculum_id) {
+            return res.status(400).json({
+                success: false,
+                message: 'Curriculum ID is required'
+            });
+        }
+        
+        await SectionModel.assignCurriculumToSection(sectionId, curriculum_id);
+        
+        res.json({
+            success: true,
+            message: 'Curriculum assigned successfully'
+        });
+    } catch (error) {
+        console.error('❌ Error assigning curriculum:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error assigning curriculum',
+            error: error.message
+        });
+    }
+};
+
+// Get subjects from section's curriculum
+exports.getSectionCurriculumSubjects = async (req, res) => {
+    try {
+        const { sectionId } = req.params;
+        
+        console.log('📚 Getting curriculum subjects for section:', sectionId);
+        
+        const subjects = await SectionModel.getSectionSubjectsFromCurriculum(sectionId);
+        
+        res.json({
+            success: true,
+            subjects: subjects || []
+        });
+    } catch (error) {
+        console.error('❌ Error getting curriculum subjects:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching curriculum subjects',
+            error: error.message
+        });
+    }
+};
+
+// Get section's current curriculum info
+exports.getSectionCurriculum = async (req, res) => {
+    try {
+        const { sectionId } = req.params;
+        
+        console.log('📚 Getting section curriculum:', sectionId);
+        
+        const curriculum = await SectionModel.getSectionCurriculum(sectionId);
+        
+        res.json({
+            success: true,
+            curriculum: curriculum
+        });
+    } catch (error) {
+        console.error('❌ Error getting section curriculum:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching section curriculum',
+            error: error.message
+        });
+    }
+};
+
+
+
+// At the end of sections.js, before module.exports:
+console.log('✅ Section routes loaded:');
+console.log('  GET    /api/sections');
+console.log('  GET    /api/sections/:id');
+console.log('  POST   /api/sections');
+console.log('  PUT    /api/sections/:id');
+console.log('  DELETE /api/sections/:id');
+console.log('  GET    /api/sections/:id/students');
+console.log('  POST   /api/sections/:id/students');
+console.log('  DELETE /api/sections/:id/students/:studentId');
+console.log('  GET    /api/sections/:id/subjects');
+console.log('  POST   /api/sections/:id/subjects');
+console.log('  DELETE /api/sections/:id/subjects/:subjectId');
+
+module.exports;

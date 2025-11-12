@@ -1,113 +1,83 @@
 const express = require('express');
 const router = express.Router();
-const sectionsController = require('../controllers/sectionsController');
-const successionController = require('../controllers/successionController');
+const sectionController = require('../controllers/sectionController');
 const { authenticateToken } = require('../middleware/auth');
-const { checkRole } = require('../middleware/roleCheck');
 
-// All routes require authentication
-router.use(authenticateToken);
+// Apply authentication to all routes (comment out if not using auth yet)
+// router.use(authenticateToken);
 
-// ⭐ IMPORTANT: Specific routes BEFORE generic /:id routes
+// Section CRUD - Order matters! More specific routes first
+router.get('/progression-map', sectionController.getProgressionMap);
+router.get('/grade/:gradeLevel', sectionController.getSectionsByGrade);
+router.get('/', sectionController.getAllSections);
+router.get('/:sectionId', sectionController.getSectionDetails);
+router.post('/', sectionController.createSection);
+router.put('/:sectionId', sectionController.updateSection);
+router.patch('/:sectionId', sectionController.patchSection);
+router.delete('/:sectionId', sectionController.deleteSection);
 
-// Get statistics (SPECIFIC - MUST BE FIRST)
-router.get('/statistics',
-    checkRole('admin', 'registrar_shs', 'registrar_jhs'),
-    sectionsController.getSectionStatistics
+// Curriculum management - MUST be before /:sectionId routes
+router.get('/:sectionId/curriculum', sectionController.getSectionCurriculum);
+router.get('/:sectionId/curricula/available', sectionController.getAvailableCurricula);
+router.put('/:sectionId/curriculum', sectionController.assignCurriculum);
+router.get('/:sectionId/curriculum/subjects', sectionController.getSectionCurriculumSubjects);
+
+// Student management - These need to be before /:sectionId to avoid conflicts
+router.get('/students/search', sectionController.searchAvailableStudents);
+router.get('/:sectionId/students', sectionController.getSectionStudents); // ✅ ADD THIS
+router.post('/:sectionId/students', sectionController.addStudentToSection);
+router.delete('/:sectionId/students/:studentId', sectionController.removeStudentFromSection);
+
+// Subject management
+router.get('/:sectionId/subjects/available', sectionController.getAvailableSubjects); // ✅ First
+router.get('/:sectionId/subjects', sectionController.getSectionSubjects);              // ✅ Second
+router.post('/:sectionId/subjects', sectionController.addSubjectToSection);
+router.delete('/:sectionId/subjects/:subjectId', sectionController.removeSubjectFromSection);
+
+// Faculty management
+router.get('/faculty/available', sectionController.getAvailableFaculty);
+router.put('/:sectionId/adviser', sectionController.assignFacultyToSection);
+
+// Section promotion
+router.post('/:sectionId/promote', sectionController.promoteSection);
+
+// Get students in a section
+router.get('/sections/:sectionId/students', 
+    authenticateToken, 
+    sectionController.getSectionStudents
 );
 
-// Get all sections
-router.get('/',
-    checkRole('admin', 'registrar_shs', 'registrar_jhs'),
-    sectionsController.getAllSections
-);
-
-// Create section
-router.post('/',
-    checkRole('admin', 'registrar_shs', 'registrar_jhs'),
-    sectionsController.createSection
-);
-
-// Year-End Succession Routes (SPECIFIC)
-router.post('/succession/detect-returning',
-    checkRole('admin', 'registrar_shs', 'registrar_jhs'),
-    successionController.detectReturningStudents
-);
-
-router.post('/succession/promote',
-    checkRole('admin', 'registrar_shs', 'registrar_jhs'),
-    successionController.promoteStudents
-);
-
-router.post('/succession/execute',
-    checkRole('admin', 'registrar_shs', 'registrar_jhs'),
-    successionController.executeYearEndSuccession
-);
-
-router.get('/succession/progression-map',
-    checkRole('admin', 'registrar_shs', 'registrar_jhs'),
-    successionController.getSectionProgressionMap
-);
-
-// Get unassigned students (SPECIFIC)
-router.get('/:id/unassigned-students',
-    checkRole('admin', 'registrar_shs', 'registrar_jhs'),
-    sectionsController.getUnassignedStudents
-);
-
-// ⭐ SUBJECT ROUTES (NEW)
-router.get('/:id/subjects',
-    checkRole('admin', 'registrar_shs', 'registrar_jhs'),
-    sectionsController.getSectionSubjects
-);
-
-router.post('/:id/subjects',
-    checkRole('admin', 'registrar_shs', 'registrar_jhs'),
-    sectionsController.addSubjectToSection
-);
-
-router.delete('/:id/subjects',
-    checkRole('admin', 'registrar_shs', 'registrar_jhs'),
-    sectionsController.removeSubjectFromSection
-);
-
-// Assign student to section
-router.post('/:id/assign',
-    checkRole('admin', 'registrar_shs', 'registrar_jhs'),
-    sectionsController.assignStudentToSection
+// Add student to section
+router.post('/sections/:sectionId/students', 
+    authenticateToken, 
+    sectionController.addStudentToSection
 );
 
 // Remove student from section
-router.delete('/:id/students/:studentId',
-    checkRole('admin', 'registrar_shs', 'registrar_jhs'),
-    sectionsController.removeStudentFromSection
+router.delete('/sections/:sectionId/students/:studentId', 
+    authenticateToken, 
+    sectionController.removeStudentFromSection
 );
 
-// ⭐ GENERIC ROUTES AFTER SPECIFIC ONES
-
-// Get section details
-router.get('/:id',
-    checkRole('admin', 'registrar_shs', 'registrar_jhs'),
-    sectionsController.getSectionDetails
+// Get subjects for a section
+router.get('/sections/:sectionId/subjects', 
+    authenticateToken, 
+    sectionController.getSectionSubjects
 );
 
-// Update section
-router.put('/:id',
-    checkRole('admin', 'registrar_shs', 'registrar_jhs'),
-    sectionsController.updateSection
+// Add subject to section
+router.post('/sections/:sectionId/subjects', 
+    authenticateToken, 
+    sectionController.addSubjectToSection
 );
 
-// Delete section
-router.delete('/:id',
-    checkRole('admin', 'registrar_shs', 'registrar_jhs'),
-    sectionsController.deleteSection
+// Remove subject from section
+router.delete('/sections/:sectionId/subjects/:subjectId', 
+    authenticateToken, 
+    sectionController.removeSubjectFromSection
 );
 
-// Promote all students in section
-router.post('/:id/promote',
-    checkRole('admin', 'registrar_shs', 'registrar_jhs'),
-    sectionsController.promoteSection
-);
-
+// Get available subjects for a section (from curriculum)
+router.get('/:sectionId/subjects/available', sectionController.getAvailableSubjects);
 
 module.exports = router;

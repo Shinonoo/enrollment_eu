@@ -1,4 +1,5 @@
 // controllers/curriculumController.js - ONLY logic & responses
+const db = require('../config/database');
 const CurriculumModel = require('../models/curriculumModel');
 
 exports.getAllCurricula = async (req, res) => {
@@ -40,24 +41,59 @@ exports.createCurriculum = async (req, res) => {
     }
 };
 
+// Get curriculum details WITH subjects
 exports.getCurriculumDetail = async (req, res) => {
     try {
         const { curriculum_id } = req.params;
-
-        const curriculum = await CurriculumModel.getCurriculumDetail(curriculum_id);
-
-        if (!curriculum) {
-            return res.status(404).json({ error: 'Curriculum not found' });
+        
+        console.log('📚 Getting curriculum details for ID:', curriculum_id);
+        
+        // Get curriculum info
+        const [curriculumRows] = await db.query(`
+            SELECT * FROM curricula WHERE curriculum_id = ?
+        `, [curriculum_id]);
+        
+        if (!curriculumRows || curriculumRows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Curriculum not found'
+            });
         }
-
-        const subjects = await CurriculumModel.getCurriculumSubjects(curriculum_id);
-
-        res.json({ curriculum, subjects });
+        
+        const curriculum = curriculumRows[0];
+        
+        // Get subjects for this curriculum
+        const [subjects] = await db.query(`
+            SELECT 
+                s.subject_id,
+                s.subject_name,
+                s.subject_code,
+                cs.semester,
+                cs.is_required,
+                cs.curriculum_subject_id
+            FROM curriculum_subjects cs
+            JOIN subjects s ON cs.subject_id = s.subject_id
+            WHERE cs.curriculum_id = ?
+            ORDER BY cs.is_required DESC, s.subject_name ASC
+        `, [curriculum_id]);
+        
+        console.log('✅ Found curriculum with', subjects.length, 'subjects');
+        
+        res.json({
+            success: true,
+            curriculum: curriculum,
+            subjects: subjects || []
+        });
     } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({ error: error.message });
+        console.error('❌ Error getting curriculum details:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching curriculum details',
+            error: error.message
+        });
     }
 };
+
 
 exports.updateCurriculum = async (req, res) => {
     try {
@@ -90,8 +126,8 @@ exports.updateCurriculum = async (req, res) => {
 
 exports.deleteCurriculum = async (req, res) => {
     try {
-        const { curriculum_id } = req.params;
-        await CurriculumModel.deleteCurriculum(curriculum_id);
+        const { curriculumid } = req.params;
+        await CurriculumModel.deleteCurriculum(curriculumid);
         res.json({ success: true });
     } catch (error) {
         console.error('Error:', error);
@@ -110,21 +146,25 @@ exports.toggleStatus = async (req, res) => {
     }
 };
 
+// curriculumController.js
 exports.addSubjectToCurriculum = async (req, res) => {
     try {
         const { curriculum_id } = req.params;
-        const { subject_id, semester, is_required } = req.body;
+        const { subject_id, semester = 'Both', is_required = 1 } = req.body;
 
-        await CurriculumModel.addSubjectToCurriculum(curriculum_id, subject_id, semester, is_required);
+        // Insert and ignore if duplicate
+        await db.query(
+            `INSERT IGNORE INTO curriculum_subjects (curriculum_id, subject_id, semester, is_required)
+             VALUES (?, ?, ?, ?)`,
+            [curriculum_id, subject_id, semester, is_required]
+        );
+
         res.json({ success: true });
     } catch (error) {
-        console.error('Error:', error);
-        if (error.code === 'ER_DUP_ENTRY') {
-            return res.status(400).json({ error: 'Subject already in curriculum' });
-        }
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 };
+
 
 exports.removeSubjectFromCurriculum = async (req, res) => {
     try {
@@ -134,5 +174,55 @@ exports.removeSubjectFromCurriculum = async (req, res) => {
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({ error: error.message });
+    }
+};
+
+// Get curriculum with subjects
+exports.getCurriculumDetails = async (req, res) => {
+    try {
+        const { curriculumId } = req.params;
+        
+        console.log('📚 Getting curriculum details:', curriculumId);
+        
+        // Get curriculum info
+        const [curriculum] = await db.query(`
+            SELECT * FROM curricula WHERE curriculum_id = ?
+        `, [curriculumId]);
+        
+        if (!curriculum || curriculum.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Curriculum not found'
+            });
+        }
+        
+        // Get subjects for this curriculum
+        const [subjects] = await db.query(`
+            SELECT 
+                s.subject_id,
+                s.subject_name,
+                s.subject_code,
+                cs.semester,
+                cs.is_required
+            FROM curriculum_subjects cs
+            JOIN subjects s ON cs.subject_id = s.subject_id
+            WHERE cs.curriculum_id = ?
+            ORDER BY cs.is_required DESC, s.subject_name ASC
+        `, [curriculumId]);
+        
+        console.log('✅ Found', subjects.length, 'subjects');
+        
+        res.json({
+            success: true,
+            curriculum: curriculum[0],
+            subjects: subjects
+        });
+    } catch (error) {
+        console.error('❌ Error getting curriculum details:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching curriculum details',
+            error: error.message
+        });
     }
 };

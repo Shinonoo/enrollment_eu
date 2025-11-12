@@ -5,35 +5,35 @@ const db = require('../config/dbLogger');
 exports.createAdmission = async (data) => {
     const [result] = await db.query(
         `INSERT INTO admission_applications (
-            first_name, middle_name, last_name, suffix,
-            date_of_birth, gender,
-            email, phone_number,
-            street, barangay, city, province, zip_code,
-            guardian_name, guardian_relationship, guardian_phone, guardian_email,
-            school_level, grade_level, previous_school, strand,
-            application_type, status
+        lrn, first_name, middle_name, last_name, suffix,
+        date_of_birth, gender, email, phone_number,
+        city, province, zip_code, street, barangay,
+        guardian_name, guardian_relationship, guardian_phone, guardian_email,
+        school_level, grade_level, previous_school, strand,
+        status, application_type
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
-            data.firstName, 
-            data.middleName || null, 
-            data.lastName, 
+            data.lrn || null,
+            data.firstName,
+            data.middleName || null,
+            data.lastName,
             data.suffix || null,
-            data.dateOfBirth, 
+            data.dateOfBirth,
             data.gender,
-            data.email || null, 
+            data.email || null,
             data.phoneNumber || null,
-            data.street, 
-            data.barangay || null, 
-            data.city, 
-            data.province, 
+            data.street,
+            data.barangay || null,
+            data.city,
+            data.province,
             data.zipCode || null,
-            data.guardianName, 
-            data.guardianRelationship, 
-            data.guardianPhone, 
+            data.guardianName,
+            data.guardianRelationship,
+            data.guardianPhone,
             data.guardianEmail || null,
-            data.schoolLevel, 
-            data.gradeLevel, 
-            data.previousSchool || null, 
+            data.schoolLevel,
+            data.gradeLevel,
+            data.previousSchool || null,
             data.strand || null,
             data.applicationType,
             'pending'
@@ -122,7 +122,7 @@ exports.sendToAccountant = async (applicationIds) => {
 exports.updateApplication = async (id, data) => {
     await db.query(
         `UPDATE admission_applications SET
-            first_name = ?, middle_name = ?, last_name = ?, suffix = ?,
+            lrn = ?, first_name = ?, middle_name = ?, last_name = ?, suffix = ?,
             date_of_birth = ?, gender = ?,
             email = ?, phone_number = ?,
             street = ?, barangay = ?, city = ?, province = ?, zip_code = ?,
@@ -131,7 +131,7 @@ exports.updateApplication = async (id, data) => {
             application_type = ?
          WHERE application_id = ?`,
         [
-            data.firstName, data.middleName || null, data.lastName, data.suffix || null,
+            data.lrn || null, data.firstName, data.middleName || null, data.lastName, data.suffix || null,
             data.dateOfBirth, data.gender,
             data.email || null, data.phoneNumber || null,
             data.street, data.barangay || null, data.city, data.province, data.zipCode || null,
@@ -140,4 +140,18 @@ exports.updateApplication = async (id, data) => {
             data.applicationType, id
         ]
     );
+};
+
+exports.addGuardians = async (applicationId, guardiansList) => {
+  if (!guardiansList || guardiansList.length === 0) return;
+  const values = guardiansList.map(g => [applicationId, g.name, g.relationship, g.phone, g.email || null]);
+  await db.query(
+    'INSERT INTO guardians (application_id, name, relationship, phone, email) VALUES ?',
+    [values]
+  );
+};
+
+exports.getGuardiansByApplicationId = async (applicationId) => {
+  const [rows] = await db.query('SELECT * FROM guardians WHERE application_id = ?', [applicationId]);
+  return rows;
 };
