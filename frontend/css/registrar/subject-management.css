@@ -171,12 +171,14 @@ tbody tr:hover {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
+    min-width: 60px;  /* Changed from fixed 36px to min-width */
     height: 36px;
+    padding: 0 12px;  /* Added padding for text */
     border-radius: 5px;
     border: none;
     cursor: pointer;
-    font-size: 18px;
+    font-size: 13px;  /* Reduced from 18px for text */
+    font-weight: 600; /* Added font weight */
     transition: all 0.3s ease;
 }
 

@@ -21,7 +21,7 @@
                     <h1 style="font-size: 2rem; color: #1f2937;">Admission Management</h1>
                     <p style="color: #6b7280;">View and manage student applications</p>
                 </div>
-                <button onclick="openNewApplicationModal()" class="btn btn-primary">+ New Application</button>
+                <button onclick="openNewApplicationModal()" class="btn btn-primary">+ New Admission</button>
             </div>
 
             <div class="filters">
@@ -177,32 +177,38 @@
                             <input type="text" id="edit_zip_code">
                         </div>
                     </div>
-                </div>
-
-                <div class="detail-section">
-                    <h3>Guardian Information</h3>
-                    <div class="detail-grid">
+                    </div>
+                    
+                    <div class="guardian-block">
                         <div class="form-group">
-                            <label>Guardian Name *</label>
-                            <input type="text" id="edit_guardian_name" required>
+                            <label>Guardian Name *</label><input type="text" class="guardian-name" required>
                         </div>
                         <div class="form-group">
                             <label>Relationship *</label>
-                            <input type="text" id="edit_guardian_relationship" required>
+                            <select class="guardian-relationship" required>
+                                <option value="">Select Relationship</option>
+                                <option value="Mother">Mother</option>
+                                <option value="Father">Father</option>
+                                <option value="Grandparent">Grandparent</option>
+                                <option value="Aunt/Uncle">Aunt/Uncle</option>
+                                <option value="Sibling">Sibling</option>
+                                <option value="Legal Guardian">Legal Guardian</option>
+                                <option value="Other">Other</option>
+                            </select>
                         </div>
                         <div class="form-group">
-                            <label>Guardian Phone *</label>
-                            <input type="tel" id="edit_guardian_phone" required>
+                            <label>Guardian Phone *</label><input type="tel" class="guardian-phone" required>
                         </div>
                         <div class="form-group">
-                            <label>Guardian Email</label>
-                            <input type="email" id="edit_guardian_email">
+                            <label>Guardian Email</label><input type="email" class="guardian-email">
                         </div>
+                        <button type="button" class="remove-guardian" onclick="removeGuardian(this)">Remove</button>
+                        <hr>
                     </div>
-                </div>
-
-                <div class="detail-section">
-                    <h3>Academic Information</h3>
+                    <button type="button" onclick="addGuardian()">+ Add Guardian</button>
+                    
+                    <div class="detail-section">
+                        <h3>Academic Information</h3>
                         <div class="detail-grid">
                         <div class="form-group">
                             <label>LRN</label>
@@ -260,7 +266,7 @@
 <div id="newApplicationModal" class="modal-overlay">
   <div class="modal modal-large">
     <div class="modal-header">
-      <h2 class="modal-title">New Application</h2>
+      <h2 class="modal-title">New Admission</h2>
     </div>
     <form id="newApplicationForm" class="modal-body">
       <!-- Personal Info -->
@@ -337,13 +343,18 @@
     </form>
     <div class="modal-footer">
       <button onclick="closeNewApplicationModal()" class="btn btn-secondary" type="button">Cancel</button>
-      <button onclick="submitNewApplication()" class="btn btn-primary" type="button">Submit Application</button>
+      <button onclick="submitNewApplication()" class="btn btn-primary" type="button">Submit Admission</button>
     </div>
   </div>
 </div>
 
 <script src="/js/shared/sidebar-injector.js"></script>
 <script src="/js/registrar/admission-management.js"></script>
+ </script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+      lucide.createIcons();
+    </script>
 </body>
 
 </html>

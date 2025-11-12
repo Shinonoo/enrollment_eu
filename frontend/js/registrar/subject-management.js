@@ -44,8 +44,8 @@ function renderTable() {
                 </button>
             </td>
             <td class="actions">
-                <button class="btn-icon btn-edit" onclick="editSubject(${subject.subject_id})" title="Edit">✏️</button>
-                <button class="btn-icon btn-delete" onclick="deleteSubject(${subject.subject_id})" title="Delete">🗑️</button>
+                <button class="btn-icon btn-edit" onclick="editSubject(${subject.subject_id})" title="Edit">Edit</button>
+                <button class="btn-icon btn-delete" onclick="deleteSubject(${subject.subject_id})" title="Delete">Delete</button>
             </td>
         </tr>
     `).join('');
@@ -90,8 +90,8 @@ function filterTable() {
                     </button>
                 </td>
                 <td class="actions">
-                    <button class="btn-icon btn-edit" onclick="editSubject(${subject.subject_id})" title="Edit">✏️</button>
-                    <button class="btn-icon btn-delete" onclick="deleteSubject(${subject.subject_id})" title="Delete">🗑️</button>
+                    <button class="btn-icon btn-edit" onclick="editSubject(${subject.subject_id})" title="Edit">Edit</button>
+                    <button class="btn-icon btn-delete" onclick="deleteSubject(${subject.subject_id})" title="Delete">Delete</button>
                 </td>
             </tr>
         `).join('');

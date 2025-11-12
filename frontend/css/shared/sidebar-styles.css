@@ -529,3 +529,17 @@
         width: 100%;
     }
 }
+
+/* OVERRIDE FOR MAROON/GOLD THEME */
+.sidebar-item.active {
+    background: linear-gradient(90deg, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0.1));
+    border-left-color: #FFD700;
+    color: #FFD700;
+    box-shadow: 0 4px 16px rgba(255, 215, 0, 0.2) inset, 0 2px 8px rgba(0, 0, 0, 0.1);
+    font-weight: 700;
+}
+
+.sidebar-item.active .icon {
+    color: #FFD700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}

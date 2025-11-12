@@ -138,21 +138,57 @@
     </div>
 
     <!-- Detail Modal -->
-    <div id="detailModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="detailTitle">Curriculum Details</h2>
-                <button class="close-btn" onclick="closeDetailModal()">&times;</button>
+<div class="modal" id="viewCurriculumModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="viewCurriculumTitle">Curriculum Details</h2>
+            <button class="modal-close" onclick="closeViewCurriculumModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="modal-body">
+            <div class="curriculum-info-grid">
+                <div class="info-item">
+                    <strong>Code:</strong>
+                    <span id="viewCurriculumCode">-</span>
+                </div>
+                <div class="info-item">
+                    <strong>School Level:</strong>
+                    <span id="viewSchoolLevel">-</span>
+                </div>
+                <div class="info-item">
+                    <strong>Grade Level:</strong>
+                    <span id="viewGradeLevel">-</span>
+                </div>
+                <div class="info-item">
+                    <strong>Strand:</strong>
+                    <span id="viewStrand">-</span>
+                </div>
+                <div class="info-item">
+                    <strong>Status:</strong>
+                    <span id="viewStatus">-</span>
+                </div>
+                <div class="info-item">
+                    <strong>Created:</strong>
+                    <span id="viewCreated">-</span>
+                </div>
             </div>
-
-            <div id="detailContent"></div>
-
-            <div class="modal-actions">
-                <button type="button" class="btn-secondary" id="editBtn" onclick="editCurrentCurriculum()">Edit</button>
-                <button type="button" class="btn-secondary" onclick="closeDetailModal()">Close</button>
+            
+            <h3>Subjects (<span id="subjectCount">0</span>)</h3>
+            <div id="curriculumSubjectsList" class="subjects-list">
+                <p class="no-subjects-message">Loading...</p>
             </div>
         </div>
+        
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeViewCurriculumModal()">
+                <i class="fas fa-times"></i> Close
+            </button>
+        </div>
     </div>
+</div>
+
 
 <script src="/js/shared/sidebar-injector.js"></script>
 <script src="/js/registrar/curriculum.js"></script>

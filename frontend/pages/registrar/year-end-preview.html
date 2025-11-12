@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Year-End Promotion Preview</title>
+          <link rel="stylesheet" href="/css/shared/page-transitions.css">
+
+<link rel="stylesheet" href="/css/shared/sidebar-styles.css">
+  <link rel="stylesheet" href="/css/registrar/year-end-preview.css" />
+  
+</head>
+<body>
+  <!-- Sidebar will be injected here -->
+  <script src="/js/registrar/sidebar.js"></script>
+
+  <main>
+    <h1>Year-End Promotion Preview</h1>
+    <button id="refreshBtn">Refresh Preview</button>
+    <button id="promoteBtn" disabled>Promote Eligible Students</button>
+    <div id="promotionStatus"></div>
+    <table id="previewTable" aria-label="Year end promotion preview table">
+      <thead>
+        <tr>
+          <th>Student Name</th>
+          <th>Current Grade</th>
+          <th>Current Section</th>
+          <th>Next Section</th>
+          <th>Mapping Status</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </main>
+
+  <script src="/js/registrar/year-end-preview.js"></script>
+    <script src="/js/shared/sidebar-injector.js"></script>
+
+</body>
+</html>

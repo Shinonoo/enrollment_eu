@@ -585,6 +585,7 @@ async function submitNewApplication() {
 
   const token = localStorage.getItem('token');
   const newAppData = {
+    lrn: document.getElementById('new_student_number').value || null,
     studentnumber: document.getElementById('new_student_number').value || null,
     first_name: document.getElementById('new_first_name').value,
     middle_name: document.getElementById('new_middle_name').value,
@@ -638,5 +639,63 @@ async function submitNewApplication() {
 document.getElementById('newApplicationModal').addEventListener('click', function(e) {
   if (e.target === this) closeNewApplicationModal();
 });
+
+function addGuardian() {
+  const container = document.getElementById('guardiansContainer');
+  const guardianBlock = document.createElement('div');
+  guardianBlock.classList.add('guardian-block');
+  guardianBlock.innerHTML = `
+    <div class="form-group">
+      <label>Guardian Name *</label><input type="text" class="guardian-name" required>
+    </div>
+    <div class="form-group">
+      <label>Relationship *</label>
+      <select class="guardian-relationship" required>
+        <option value="">Select Relationship</option>
+        <option value="Mother">Mother</option>
+        <option value="Father">Father</option>
+        <option value="Grandparent">Grandparent</option>
+        <option value="Aunt/Uncle">Aunt/Uncle</option>
+        <option value="Sibling">Sibling</option>
+        <option value="Legal Guardian">Legal Guardian</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Guardian Phone *</label><input type="tel" class="guardian-phone" required>
+    </div>
+    <div class="form-group">
+      <label>Guardian Email</label><input type="email" class="guardian-email">
+    </div>
+    <button type="button" class="remove-guardian" onclick="removeGuardian(this)">Remove</button>
+    <hr>
+  `;
+  container.appendChild(guardianBlock);
+}
+
+function removeGuardian(btn) {
+  btn.parentElement.remove();
+}
+
+// To initialize, call addGuardian() once when the form is loaded for the initial block
+
+function getGuardians() {
+  const guardians = [];
+  document.querySelectorAll('.guardian-block').forEach(block => {
+    guardians.push({
+      name: block.querySelector('.guardian-name').value,
+      relationship: block.querySelector('.guardian-relationship').value,
+      phone: block.querySelector('.guardian-phone').value,
+      email: block.querySelector('.guardian-email').value
+    });
+  });
+  return guardians;
+}
+
+// In submitNewApplication, use
+const guardiansArray = getGuardians();
+// Then add to your payload:
+newAppData.guardians = guardiansArray;
+
 
 loadApplications();

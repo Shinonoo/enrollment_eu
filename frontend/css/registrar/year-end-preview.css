@@ -1,0 +1,75 @@
+/* year-end-preview.css */
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+th {
+    background-color: #f2f2f2;
+}
+
+.missing {
+    background-color: #fdd;
+}
+
+button {
+    margin: 10px 0;
+    padding: 8px 16px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+#promotionStatus {
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+/* year-end-preview.css */
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  box-shadow: 0 3px 6px rgb(212 175 55 / 0.4);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+th, td {
+  border: 1px solid #c49b1f;
+  padding: 12px 16px;
+  text-align: left;
+  color: #4b1a1a;
+  font-weight: 500;
+}
+
+th {
+  background-color: #d4af37;
+  color: #3a1e1e;
+}
+
+tbody tr:nth-child(odd) {
+  background: #fff8dc;
+}
+
+tbody tr:nth-child(even) {
+  background: #fef9e7;
+}
+
+.missing {
+  background-color: #ffcccc !important;
+  color: #660000 !important;
+  font-weight: 700;
+}
+
+#promotionStatus {
+  margin-top: 12px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #800000;
+}

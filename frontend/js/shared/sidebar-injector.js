@@ -6,7 +6,7 @@ const SIDEBAR_MENUS = {
     { href: "/pages/registrar/student-profile.html", icon: "◉", label: "Students", page: "student-profile" },
     { href: "/pages/registrar/sections-management.html", icon: "▬", label: "Sections", page: "sections-management" },
     { href: "/pages/registrar/reports.html", icon: "▤", label: "Reports", page: "reports" },
-    { href: "/pages/registrar/year-end-succession.html", icon: "◐", label: "Year-End", page: "year-end-succession" },
+    { href: "/pages/registrar/year-end-preview.html", icon: "◐", label: "Year-End", page: "year-end-succession" },
     { href: "/pages/registrar/faculty-management.html", icon: "▲", label: "Faculty", page: "faculty-management" },
     { href: "/pages/registrar/student-status.html", icon: "⚙", label: "Student Status", page: "student-status" },
     { href: "/pages/registrar/curriculum-management.html", icon: "✎", label: "Curriculum", page: "curriculum-management" },
@@ -15,8 +15,8 @@ const SIDEBAR_MENUS = {
   accountant: [
     { href: "/pages/accounting/dashboard.html", icon: "◆", label: "Dashboard", page: "dashboard" },
     { href: "/pages/accounting/payment-schemes.html", icon: "₱", label: "Payment Schemes", page: "payment-schemes" },
-    { href: "/pages/accounting/pending-admissions.html", icon: "▦", label: "Pending Admissions", page: "pending-admissions" },
-    { href: "/pages/accounting/processing-students.html", icon: "◉", label: "Processing Students", page: "processing-students" },
+    { href: "/pages/accounting/pending-admissions.html", icon: "▦", label: "Assesment and Billing", page: "pending-admissions" },
+    { href: "/pages/accounting/processing-students.html", icon: "◉", label: "Registration", page: "processing-students" },
   ],
   cashier: [
     { href: "/pages/cashier/dashboard.html", icon: "◆", label: "Dashboard", page: "dashboard" },
