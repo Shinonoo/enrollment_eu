@@ -509,7 +509,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Philippine Address Data
 const addressData = {
-    "Quezon": {
+    "Quezon Province": {
         "Lucena City": ["Barangay 1", "Barangay 2", "Barangay 3", "Gulang-Gulang", "Ibabang Dupay", "Ilayang Dupay"],
         "Tayabas City": ["Alsam Ibaba", "Alsam Ilaya", "Angustias", "Ayusan I", "Ayusan II", "Baguio"],
         "Sariaya": ["Barangay 1", "Barangay 2", "Barangay 3", "Concepcion Ibaba", "Concepcion Palad"],
