@@ -506,3 +506,119 @@ document.addEventListener('DOMContentLoaded', () => {
     
     showStep();
 });
+
+// Philippine Address Data
+const addressData = {
+    "Quezon Province": {
+        "Lucena City": ["Barangay 1", "Barangay 2", "Barangay 3", "Gulang-Gulang", "Ibabang Dupay", "Ilayang Dupay"],
+        "Tayabas City": ["Alsam Ibaba", "Alsam Ilaya", "Angustias", "Ayusan I", "Ayusan II", "Baguio"],
+        "Sariaya": ["Barangay 1", "Barangay 2", "Barangay 3", "Concepcion Ibaba", "Concepcion Palad"],
+        "Candelaria": ["Buenavista East", "Buenavista West", "Malabanban Norte", "Malabanban Sur"],
+        "Tiaong": ["Anastacia", "Aquino", "Behia", "Bukal", "Buhay"],
+        "Pagbilao": ["Pag-asa", "Pinagbayanan", "Silangang Malicboy", "Binahaan"],
+        "Infanta": ["Alitas", "Antikin", "Bantilan", "Binulasan", "Boboin"],
+        "Mauban": ["Alitao", "Bagong Bayan", "Balaybalay", "Bato", "Cagbalogo I"],
+        "Gumaca": ["Adia Bitaog", "Bagong Buhay", "Bamban", "Bantad"],
+        "Lopez": ["Bagacay", "Banabahin Ibaba", "Banabahin Ilaya", "Bantilan"]
+    },
+    "Laguna": {
+        "Calamba": ["Bagong Kalsada", "Banadero", "Banlic", "Barandal", "Barangay 1"],
+        "San Pablo": ["Atisan", "Barangay I-A", "Barangay I-B", "Barangay II-A"],
+        "Biñan": ["Biñan", "Bungahan", "Canlalay", "Casile", "De La Paz"],
+        "Santa Rosa": ["Aplaya", "Balibago", "Caingin", "Dila", "Dita"],
+        "Cabuyao": ["Baclaran", "Banaybanay", "Banlic", "Barangay Dos", "Bigaa"],
+        "Los Baños": ["Anos", "Bagong Silang", "Bambang", "Batong Malake", "Baybayin"]
+    },
+    "Batangas": {
+        "Batangas City": ["Alangilan", "Balagtas", "Balete", "Banaba Center", "Banaba Ibaba"],
+        "Lipa City": ["Adya", "Anilao", "Antipolo del Norte", "Bagong Pook"],
+        "Tanauan City": ["Altura Bata", "Altura Matanda", "Altura South", "Ambulong"],
+        "Santo Tomas": ["San Agustin", "San Antonio", "San Bartolome", "San Felix"],
+        "Nasugbu": ["Aga", "Balaytigui", "Banilad", "Barangay 1"],
+        "Lemery": ["Anak-Dagat", "Arumahan", "Ayao-iyao", "Bagong Pook"]
+    },
+    "Cavite": {
+        "Bacoor": ["Alima", "Aniban I", "Aniban II", "Banalo", "Bayanan"],
+        "Dasmariñas": ["Burol I", "Burol II", "Burol III", "Emmanuel Bergado I"],
+        "Imus": ["Alapan I-A", "Alapan I-B", "Alapan II-A", "Anabu I-A"],
+        "Cavite City": ["Barangay 1", "Barangay 2", "Barangay 3", "Barangay 4"],
+        "General Trias": ["Alingaro", "Arnaldo Poblacion", "Bacao I", "Bacao II"],
+        "Trece Martires": ["Aguado", "Cabezas", "Cabuco", "De Ocampo"]
+    },
+    "Rizal": {
+        "Antipolo": ["Bagong Nayon", "Beverly Hills", "Calawis", "Dalig", "Dela Paz"],
+        "Cainta": ["San Andres", "San Isidro", "San Juan", "San Roque"],
+        "Taytay": ["Dolores", "Muzon", "San Isidro", "San Juan", "Santa Ana"],
+        "Binangonan": ["Bangad", "Batingan", "Bilibiran", "Binitagan"],
+        "San Mateo": ["Ampid I", "Ampid II", "Banaba", "Burgos", "Dulongbayan"],
+        "Rodriguez": ["Balite", "Burgos", "Geronimo", "Macabud"]
+    },
+    "Metro Manila": {
+        "Quezon City": ["Bagong Pag-asa", "Bahay Toro", "Balingasa", "Batasan Hills"],
+        "Manila": ["Binondo", "Ermita", "Intramuros", "Malate", "Paco", "Pandacan"],
+        "Makati": ["Bel-Air", "Dasmariñas", "Forbes Park", "Guadalupe Nuevo", "Poblacion"],
+        "Pasig": ["Bagong Ilog", "Bagong Katipunan", "Kapitolyo", "Manggahan", "Oranbo"],
+        "Taguig": ["Bagumbayan", "Bambang", "Calzada", "Central Bicutan", "Fort Bonifacio"],
+        "Pasay": ["Barangay 1", "Barangay 76", "Malibay", "San Isidro", "Villamor"],
+        "Parañaque": ["Baclaran", "BF Homes", "Don Bosco", "La Huerta", "San Antonio"],
+        "Las Piñas": ["Almanza Uno", "Almanza Dos", "BF International", "Daniel Fajardo"],
+        "Muntinlupa": ["Alabang", "Bayanan", "Buli", "Cupang", "Poblacion"],
+        "Caloocan": ["Barangay 1", "Barangay 2", "Bagong Silang", "Camarin"],
+        "Malabon": ["Acacia", "Baritan", "Catmon", "Concepcion", "Dampalit"],
+        "Navotas": ["Bagumbayan North", "Bagumbayan South", "Bangculasi", "Daanghari"],
+        "Valenzuela": ["Arkong Bato", "Bagbaguin", "Balangkas", "Bignay"],
+        "Marikina": ["Barangka", "Calumpang", "Concepcion Uno", "Industrial Valley"],
+        "San Juan": ["Addition Hills", "Balong-Bato", "Corazon de Jesus", "Ermitaño"],
+        "Mandaluyong": ["Addition Hills", "Bagong Silang", "Barangka Drive", "Buayang Bato"]
+    }
+};
+
+// Get dropdown elements
+const provinceSelect = document.getElementById('province');
+const citySelect = document.getElementById('city');
+const barangaySelect = document.getElementById('barangay');
+
+// Province change event
+provinceSelect.addEventListener('change', function() {
+    const selectedProvince = this.value;
+    
+    // Reset and disable city and barangay
+    citySelect.innerHTML = '<option value="">Select City/Municipality</option>';
+    barangaySelect.innerHTML = '<option value="">Select city first</option>';
+    citySelect.disabled = true;
+    barangaySelect.disabled = true;
+    
+    if (selectedProvince && addressData[selectedProvince]) {
+        // Populate cities
+        const cities = Object.keys(addressData[selectedProvince]);
+        cities.forEach(city => {
+            const option = document.createElement('option');
+            option.value = city;
+            option.textContent = city;
+            citySelect.appendChild(option);
+        });
+        citySelect.disabled = false;
+    }
+});
+
+// City change event
+citySelect.addEventListener('change', function() {
+    const selectedProvince = provinceSelect.value;
+    const selectedCity = this.value;
+    
+    // Reset barangay
+    barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
+    barangaySelect.disabled = true;
+    
+    if (selectedCity && addressData[selectedProvince][selectedCity]) {
+        // Populate barangays
+        const barangays = addressData[selectedProvince][selectedCity];
+        barangays.forEach(barangay => {
+            const option = document.createElement('option');
+            option.value = barangay;
+            option.textContent = barangay;
+            barangaySelect.appendChild(option);
+        });
+        barangaySelect.disabled = false;
+    }
+});
