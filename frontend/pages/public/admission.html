@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Admission Form - Enrollment System</title>
     <link rel="stylesheet" href="admission.css">
 </head>
+
 <body>
     <div class="page-wrapper">
         <!-- Progress Indicator -->
@@ -56,7 +58,8 @@
                     <p>Your reference number:</p>
                     <div class="reference-number" id="referenceNumber"></div>
                     <p>Please save this number for tracking your application.</p>
-                    <p class="next-steps">You will receive an email confirmation shortly. The registrar will contact you within 3-5 business days.</p>
+                    <p class="next-steps">You will receive an email confirmation shortly. The registrar will contact you
+                        within 3-5 business days.</p>
                     <button onclick="resetForm()" class="btn btn-primary" style="margin-top: 2rem;">
                         Submit Another Application
                     </button>
@@ -66,7 +69,7 @@
             <!-- Form Container -->
             <div id="formContainer">
                 <form id="admissionForm" autocomplete="off">
-                    
+
                     <!-- ===== STEP 1: Personal Information ===== -->
                     <div class="form-step active" id="formStep1">
                         <h2 class="step-title">Personal Information</h2>
@@ -131,38 +134,37 @@
                             </div>
                         </div>
 
-                        <!-- ADDRESS FIELDS: NOW PROPERLY INCLUDED -->
-<div class="form-group">
-    <label>Province</label>
-    <select name="province" id="province" required>
-        <option value="">Select Province</option>
-        <option value="Quezon Province">Quezon Province</option>
-        <option value="Laguna">Laguna</option>
-        <option value="Batangas">Batangas</option>
-        <option value="Cavite">Cavite</option>
-        <option value="Rizal">Rizal</option>
-        <option value="Metro Manila">Metro Manila</option>
-        <!-- Add more provinces as needed -->
-    </select>
-    <small class="field-hint">Select your province first</small>
-</div>
+                        <!-- ADDRESS FIELDS -->
+                        <div class="form-group">
+                            <label>Province <span class="required">*</span></label>
+                            <select name="province" id="province" required>
+                                <option value="">Select Province</option>
+                                <option value="Quezon Province">Quezon Province</option>
+                                <option value="Laguna">Laguna</option>
+                                <option value="Batangas">Batangas</option>
+                                <option value="Cavite">Cavite</option>
+                                <option value="Rizal">Rizal</option>
+                                <option value="Metro Manila">Metro Manila</option>
+                            </select>
+                            <small class="field-hint">Select your province first</small>
+                        </div>
 
-<div class="form-group">
-    <label>City/Municipality</label>
-    <select name="city" id="city" required disabled>
-        <option value="">Select province first</option>
-    </select>
-    <small class="field-hint">Choose your city or town</small>
-</div>
+                        <div class="form-group">
+                            <label>City/Municipality <span class="required">*</span></label>
+                            <select name="city" id="city" required disabled>
+                                <option value="">Select province first</option>
+                            </select>
+                            <small class="field-hint">Choose your city or town</small>
+                        </div>
 
-<div class="form-group">
-    <label>Barangay</label>
-    <select name="barangay" id="barangay" required disabled>
-        <option value="">Select city first</option>
-    </select>
-    <small class="field-hint">Choose your barangay</small>
-</div>
-
+                        <div class="form-group">
+                            <label>Barangay <span class="required">*</span></label>
+                            <select name="barangay" id="barangay" required disabled>
+                                <option value="">Select city first</option>
+                            </select>
+                            <small class="field-hint">Choose your barangay</small>
+                        </div>
+                    </div>
 
                     <!-- ===== STEP 3: Guardian Information ===== -->
                     <div class="form-step" id="formStep3">
@@ -201,14 +203,14 @@
 
                         <div class="form-group full-width">
                             <label>Guardian Address (if different)</label>
-                            <input type="text" name="guardianAddress" placeholder="Leave blank if same as student address">
+                            <input type="text" name="guardianAddress">
                         </div>
                     </div>
 
                     <!-- ===== STEP 4: Academic Information ===== -->
                     <div class="form-step" id="formStep4">
                         <h2 class="step-title">Academic Information</h2>
-                        <p class="step-description">Tell us about your academic background</p>
+                        <p class="step-description">Tell us about your enrollment plans</p>
 
                         <div class="form-row">
                             <div class="form-group">
@@ -218,13 +220,14 @@
                                     <option value="JHS">Junior High School (JHS)</option>
                                     <option value="SHS">Senior High School (SHS)</option>
                                 </select>
-                                <small class="field-hint">Select the level you wish to enroll in</small>
+                                <small class="field-hint">Which level are you enrolling in?</small>
                             </div>
                             <div class="form-group">
-                                <label>Grade Level <span class="required">*</span></label>
+                                <label>Grade Level to Enroll <span class="required">*</span></label>
                                 <select name="gradeLevel" id="gradeLevel" required>
                                     <option value="">First select a level</option>
                                 </select>
+                                <small class="field-hint">What grade will you be entering?</small>
                             </div>
                         </div>
 
@@ -239,24 +242,44 @@
                                 <option value="TVL">TVL (Technical-Vocational-Livelihood)</option>
                                 <option value="GAS">GAS (General Academic Strand)</option>
                             </select>
-                            <small class="field-hint">Choose your academic specialization</small>
+                            <small class="field-hint">Choose your academic track</small>
                         </div>
 
                         <div class="form-group full-width">
-                            <label>Previous School</label>
-                            <input type="text" name="previousSchool" placeholder="Name of your last school (optional)">
+                            <label>Last School Attended</label>
+                            <input type="text" name="previousSchool"
+                                placeholder="Name of your previous school (optional)">
+                            <small class="field-hint">Leave blank if you're a first-time student</small>
                         </div>
 
-                        <div class="form-group">
-                            <label>Application Type <span class="required">*</span></label>
-                            <select name="applicationType" required>
-                                <option value="">Select Type</option>
-                                <option value="new">New Student</option>
-                                <option value="returning">Returning Student</option>
-                                <option value="transferee">Transferee</option>
-                            </select>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Application Type <span class="required">*</span></label>
+                                <select name="applicationType" required>
+                                    <option value="">Select Type</option>
+                                    <option value="new">New Student</option>
+                                    <option value="returning">Returning Student</option>
+                                    <option value="transferee">Transferee</option>
+                                </select>
+                                <small class="field-hint">Your enrollment status</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Last Grade Completed</label>
+                                <select name="lastGradeCompleted">
+                                    <option value="">Select (optional)</option>
+                                    <option value="Grade 6">Grade 6 (Elementary)</option>
+                                    <option value="Grade 7">Grade 7</option>
+                                    <option value="Grade 8">Grade 8</option>
+                                    <option value="Grade 9">Grade 9</option>
+                                    <option value="Grade 10">Grade 10</option>
+                                    <option value="Grade 11">Grade 11</option>
+                                    <option value="Grade 12">Grade 12</option>
+                                </select>
+                                <small class="field-hint">What was your last completed grade?</small>
+                            </div>
                         </div>
                     </div>
+
 
                     <!-- ===== STEP 5: Review & Submit ===== -->
                     <div class="form-step" id="formStep5">
@@ -284,7 +307,8 @@
 
                     <!-- Navigation Buttons -->
                     <div class="form-navigation">
-                        <button type="button" class="btn btn-secondary" id="prevBtn" onclick="previousStep()" style="display: none;">
+                        <button type="button" class="btn btn-secondary" id="prevBtn" onclick="previousStep()"
+                            style="display: none;">
                             ← Previous
                         </button>
                         <button type="button" class="btn btn-primary" id="nextBtn" onclick="nextStep()">
@@ -301,4 +325,5 @@
 
     <script src="admission.js"></script>
 </body>
+
 </html>
