@@ -1,14 +1,3 @@
-// Create floating particles
-const particlesContainer = document.getElementById('particles');
-for (let i = 0; i < 50; i++) {
-    const particle = document.createElement('div');
-    particle.className = 'particle';
-    particle.style.left = Math.random() * 100 + '%';
-    particle.style.animationDelay = Math.random() * 15 + 's';
-    particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
-    particlesContainer.appendChild(particle);
-}
-
 // API base URL
 const API_URL = 'http://localhost:5001/api';
 
@@ -22,9 +11,10 @@ loginForm.addEventListener('submit', async (event) => {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
     const loginBtn = event.target.querySelector('.login-btn');
+    const btnText = loginBtn.querySelector('span') || loginBtn;
     
     // Add loading state
-    loginBtn.textContent = 'Signing In...';
+    btnText.textContent = 'Signing In...';
     loginBtn.disabled = true;
     
     try {
@@ -43,7 +33,7 @@ loginForm.addEventListener('submit', async (event) => {
             errorMessage.classList.remove('show');
             
             // Success animation
-            loginBtn.textContent = 'Success!';
+            btnText.textContent = 'Success!';
             loginBtn.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
             
             // Store token and user info
@@ -72,7 +62,7 @@ loginForm.addEventListener('submit', async (event) => {
             // Show error
             errorMessage.textContent = '⚠️ ' + (data.message || data.error || 'Login failed');
             errorMessage.classList.add('show');
-            loginBtn.textContent = 'Sign In';
+            btnText.textContent = 'Sign In';
             loginBtn.disabled = false;
             
             // Clear password
@@ -87,7 +77,7 @@ loginForm.addEventListener('submit', async (event) => {
         console.error('Login error:', error);
         errorMessage.textContent = '⚠️ Unable to connect to server. Please try again later.';
         errorMessage.classList.add('show');
-        loginBtn.textContent = 'Sign In';
+        btnText.textContent = 'Sign In';
         loginBtn.disabled = false;
         
         setTimeout(() => {
@@ -130,10 +120,11 @@ document.getElementById('username').addEventListener('keypress', function(e) {
 const inputs = document.querySelectorAll('input[type="text"], input[type="password"]');
 inputs.forEach(input => {
     input.addEventListener('focus', function() {
-        this.parentElement.parentElement.style.transform = 'translateX(5px)';
+        this.parentElement.style.transform = 'translateX(3px)';
+        this.parentElement.style.transition = 'transform 0.2s ease';
     });
     
     input.addEventListener('blur', function() {
-        this.parentElement.parentElement.style.transform = 'translateX(0)';
+        this.parentElement.style.transform = 'translateX(0)';
     });
 });
