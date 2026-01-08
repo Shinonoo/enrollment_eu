@@ -1,39 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - School Management System</title>
     <link rel="stylesheet" href="login.css">
 </head>
+
 <body>
-    <div class="background">
-        <div class="particles" id="particles"></div>
-    </div>
+    <header class="top-header">
+        <div class="header-content">
+            <div class="header-logo">
+                <img src="/pages/public/images/euC.png" alt="School Logo" class="header-logo-img">
+                <span class="header-title">Manuel S. Enverga University Foundation Inc.</span>
+            </div>
+            <nav class="header-nav">
+                <a href="#about">About</a>
+                <a href="#contact">Contact</a>
+                <a href="#help">Help</a>
+            </nav>
+        </div>
+    </header>
 
     <div class="login-container">
-        <div class="login-left">
+        <div class="login-welcome">
             <div class="logo-container">
-                <img class="logo" src="/images/euC.png" alt="School Logo">
+                <img class="logo" src="/pages/public/images/euC.png" alt="School Logo">
             </div>
-            <div class="welcome-text">
-                <h1>Welcome Back!</h1>
-                <p>Access your comprehensive school management system with advanced analytics and real-time data visualization.</p>
-            </div>
-            <div class="feature-list">
+            <h1>Welcome Back!</h1>
+            <p class="welcome-description">Access your comprehensive school management system with real-time analytics
+                and secure data management.</p>
+
+            <div class="feature-highlights">
                 <div class="feature-item">
-                    <span>✓ Real-time enrollment tracking</span>
+                    <span class="feature-icon">📊</span>
+                    <div class="feature-text">
+                        <strong>Real-time Tracking</strong>
+                        <p>Monitor enrollment data instantly</p>
+                    </div>
                 </div>
                 <div class="feature-item">
-                    <span>✓ Student profile management</span>
+                    <span class="feature-icon">👥</span>
+                    <div class="feature-text">
+                        <strong>Student Management</strong>
+                        <p>Complete profile administration</p>
+                    </div>
                 </div>
                 <div class="feature-item">
-                    <span>✓ Secure data protection</span>
+                    <span class="feature-icon">🔒</span>
+                    <div class="feature-text">
+                        <strong>Secure & Protected</strong>
+                        <p>Enterprise-grade security</p>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="login-right">
+        <div class="login-form-section">
             <div class="login-header">
                 <h2>Sign In</h2>
                 <p>Enter your credentials to access your account</p>
@@ -47,13 +71,7 @@
                 <div class="form-group">
                     <label for="username">Username</label>
                     <div class="input-wrapper">
-                        <input 
-                            type="text" 
-                            id="username" 
-                            name="username" 
-                            placeholder="Enter your username"
-                            required
-                        >
+                        <input type="text" id="username" name="username" placeholder="Enter your username" required>
                         <span class="input-icon">👤</span>
                     </div>
                 </div>
@@ -61,13 +79,7 @@
                 <div class="form-group">
                     <label for="password">Password</label>
                     <div class="input-wrapper">
-                        <input 
-                            type="password" 
-                            id="password" 
-                            name="password" 
-                            placeholder="Enter your password"
-                            required
-                        >
+                        <input type="password" id="password" name="password" placeholder="Enter your password" required>
                         <span class="input-icon">🔒</span>
                     </div>
                 </div>
@@ -80,12 +92,18 @@
                     <a href="#" class="forgot-password">Forgot Password?</a>
                 </div>
 
-                <button type="submit" class="login-btn">Sign In</button>
+                <button type="submit" class="login-btn">
+                    <span>Sign In</span>
+                </button>
             </form>
+
+            <div class="login-footer">
+                <p>First time here? <a href="#" class="register-link">Contact Administrator</a></p>
+            </div>
         </div>
     </div>
-    
-    <script src="login.js"></script>
 
+    <script src="login.js"></script>
 </body>
+
 </html>
