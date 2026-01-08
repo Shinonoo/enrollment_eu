@@ -132,34 +132,37 @@
                         </div>
 
                         <!-- ADDRESS FIELDS: NOW PROPERLY INCLUDED -->
-                        <div class="form-group full-width">
-                            <label>Street Address <span class="required">*</span></label>
-                            <input type="text" name="street" placeholder="House No., Street Name" required>
-                            <small class="field-hint">e.g., 123 Main Street</small>
-                        </div>
+<div class="form-group">
+    <label>Province</label>
+    <select name="province" id="province" required>
+        <option value="">Select Province</option>
+        <option value="Quezon">Quezon</option>
+        <option value="Laguna">Laguna</option>
+        <option value="Batangas">Batangas</option>
+        <option value="Cavite">Cavite</option>
+        <option value="Rizal">Rizal</option>
+        <option value="Metro Manila">Metro Manila</option>
+        <!-- Add more provinces as needed -->
+    </select>
+    <small class="field-hint">Select your province first</small>
+</div>
 
-                        <div class="form-group full-width">
-                            <label>Barangay</label>
-                            <input type="text" name="barangay" placeholder="Barangay name (optional)">
-                            <small class="field-hint">e.g., Barangay San Jose</small>
-                        </div>
+<div class="form-group">
+    <label>City/Municipality</label>
+    <select name="city" id="city" required disabled>
+        <option value="">Select province first</option>
+    </select>
+    <small class="field-hint">Choose your city or town</small>
+</div>
 
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>City <span class="required">*</span></label>
-                                <input type="text" name="city" placeholder="City name" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Province <span class="required">*</span></label>
-                                <input type="text" name="province" placeholder="Province name" required>
-                            </div>
-                        </div>
+<div class="form-group">
+    <label>Barangay</label>
+    <select name="barangay" id="barangay" required disabled>
+        <option value="">Select city first</option>
+    </select>
+    <small class="field-hint">Choose your barangay</small>
+</div>
 
-                        <div class="form-group">
-                            <label>Zip Code</label>
-                            <input type="text" name="zipCode" placeholder="Postal code (optional)">
-                        </div>
-                    </div>
 
                     <!-- ===== STEP 3: Guardian Information ===== -->
                     <div class="form-step" id="formStep3">
