@@ -678,3 +678,36 @@ body {
 }
 
 .hidden { display: none !important; }
+
+.form-group select {
+    width: 100%;
+    padding: 13px 16px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 15px;
+    font-family: inherit;
+    background: #fafafa;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.form-group select:disabled {
+    background: #f3f4f6;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.form-group select:focus {
+    outline: none;
+    border-color: #800000;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.08);
+}
+
+.field-hint {
+    display: block;
+    margin-top: 6px;
+    color: #6b7280;
+    font-size: 13px;
+    font-style: italic;
+}
