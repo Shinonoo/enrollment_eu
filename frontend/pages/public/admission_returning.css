@@ -444,3 +444,51 @@ div[style*="border-left: 4px solid"] {
         font-size: 0.95rem;
     }
 }
+
+/* ============================================
+   BACK TO HOME BUTTON (FIXED COLORS)
+   ============================================ */
+
+a.back-to-home-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: var(--white);
+    color: var(--maroon-primary); /* CHANGED FROM var(--primary) */
+    border: 2px solid var(--maroon-primary); /* CHANGED FROM var(--primary) */
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: var(--transition-normal);
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(128, 0, 0, 0.1);
+}
+
+a.back-to-home-btn:hover,
+a.back-to-home-btn:focus {
+    background: var(--maroon-primary) !important; /* CHANGED */
+    color: var(--white) !important;
+    border-color: var(--maroon-primary) !important; /* CHANGED */
+    transform: translateX(-5px);
+    box-shadow: 0 4px 15px rgba(128, 0, 0, 0.2);
+}
+
+a.back-to-home-btn:active {
+    transform: translateX(-3px);
+}
+
+a.back-to-home-btn:visited {
+    color: var(--maroon-primary); /* CHANGED */
+}
+
+a.back-to-home-btn:visited:hover {
+    color: var(--white) !important;
+    background: var(--maroon-primary) !important; /* CHANGED */
+}
+
+/* Prevent header hover styles from affecting the button */
+.header a.back-to-home-btn:hover {
+    color: var(--white) !important;
+}

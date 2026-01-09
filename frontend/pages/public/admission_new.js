@@ -1281,13 +1281,40 @@ function initializeAverageValidation() {
 // ============================================
 
 document.addEventListener('DOMContentLoaded', () => {
+    // **NEW: Confirm application type on first visit**
+    const hasShownWarning = sessionStorage.getItem('admissionTypeWarning');
+    const hasSavedData = localStorage.getItem('admissionFormData');
+    
+    if (!hasShownWarning && !hasSavedData) {
+        setTimeout(() => {
+            const userConfirmed = confirm(
+                '📋 CONFIRM APPLICATION TYPE\n\n' +
+                'You are starting a NEW STUDENT application.\n' +
+                'This is for students enrolling at MSEUF for the first time.\n\n' +
+                'Is this correct?\n\n' +
+                '• Click OK to continue with New Student application\n' +
+                '• Click Cancel to go back and choose a different type'
+            );
+            
+            if (!userConfirmed) {
+                window.location.href = 'admission.html';
+                return;
+            }
+            
+            sessionStorage.setItem('admissionTypeWarning', 'true');
+        }, 500); // Small delay so page loads smoothly first
+    }
+    
     // Load saved data
     loadFromLocalStorage();
     
-    // **NEW: Check for expiration every 5 minutes**
+    // Initialize error clearing
+    initializeErrorClearing();
+    
+    // Check for expiration every 5 minutes
     setInterval(checkDataExpiration, 5 * 60 * 1000);
     
-    // **NEW: Show expiration warning when 1 hour remaining**
+    // Show expiration warning when 1 hour remaining
     const timeRemaining = getTimeRemaining();
     if (timeRemaining && timeRemaining.hours <= 1) {
         setTimeout(() => {
@@ -1310,6 +1337,7 @@ document.addEventListener('DOMContentLoaded', () => {
         clearTimeout(STATE.autoSaveTimer);
         STATE.autoSaveTimer = setTimeout(() => {
             collectFormData();
+            updateFieldProgress(STATE.currentStep); // Track progress
             showToast('Form saved automatically', 'info');
         }, CONFIG.AUTO_SAVE_DELAY);
     });

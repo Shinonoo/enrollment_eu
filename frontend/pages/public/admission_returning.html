@@ -7,15 +7,26 @@
     <link rel="stylesheet" href="admission_returning.css">
 </head>
 <body>
-    <div class="container" style="max-width: 700px; margin: 3rem auto;">
-        <div class="header">
-            <h1>🔄 Returning Student Re-enrollment</h1>
-            <p>Manuel S. Enverga University Foundation Inc.</p>
-            <p style="font-size: 0.9rem; color: var(--gray-600); margin-top: 0.5rem;">School Year 2025-2026</p>
-            <div style="background: var(--secondary); color: var(--primary-dark); padding: 0.75rem 1.5rem; border-radius: 8px; margin-top: 1rem; font-weight: 600;">
-                Welcome back! Just verify your information to re-enroll
-            </div>
+<div class="container" style="max-width: 700px; margin: 3rem auto;">
+    <div class="header">
+        <!-- Back Button -->
+        <a href="admission.html" class="back-to-home-btn" title="Go back to application type selection">
+            ← Back to Choose Application Type
+        </a>
+        
+        <h1>🔄 Returning Student Re-enrollment</h1>
+        <p>Manuel S. Enverga University Foundation Inc.</p>
+        <p style="font-size: 0.9rem; color: var(--gray-600); margin-top: 0.5rem;">School Year 2025-2026</p>
+        
+        <!-- Application Type Badge -->
+        <div style="background: var(--secondary); color: var(--primary-dark); padding: 0.75rem 1.5rem; border-radius: 8px; margin-top: 1rem; font-weight: 600; display: inline-block;">
+            📝 Application Type: <strong>RETURNING STUDENT</strong>
         </div>
+        
+        <div style="background: rgba(249, 200, 70, 0.1); border: 2px solid var(--secondary); padding: 0.75rem 1.5rem; border-radius: 8px; margin-top: 1rem; font-weight: 600;">
+            Welcome back! Just verify your information to re-enroll
+        </div>
+    </div>
 
         <!-- Toast Notifications -->
         <div id="toastContainer" class="toast-container"></div>
