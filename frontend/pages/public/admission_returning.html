@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Returning Student Re-enrollment - MSEUF</title>
+    <link rel="stylesheet" href="admission_returning.css">
+</head>
+<body>
+    <div class="container" style="max-width: 700px; margin: 3rem auto;">
+        <div class="header">
+            <h1>🔄 Returning Student Re-enrollment</h1>
+            <p>Manuel S. Enverga University Foundation Inc.</p>
+            <p style="font-size: 0.9rem; color: var(--gray-600); margin-top: 0.5rem;">School Year 2025-2026</p>
+            <div style="background: var(--secondary); color: var(--primary-dark); padding: 0.75rem 1.5rem; border-radius: 8px; margin-top: 1rem; font-weight: 600;">
+                Welcome back! Just verify your information to re-enroll
+            </div>
+        </div>
+
+        <!-- Toast Notifications -->
+        <div id="toastContainer" class="toast-container"></div>
+
+        <!-- Success Message -->
+        <div id="successMessage" class="success-message hidden">
+            <div class="success-content">
+                <div class="success-icon">✓</div>
+                <h2>Re-enrollment Successful!</h2>
+                <p>Your reference number:</p>
+                <div class="reference-number" id="referenceNumber"></div>
+                <p>Welcome back to MSEUF for SY 2025-2026!</p>
+                <p class="next-steps">You will receive an email confirmation shortly.</p>
+                <button onclick="window.location.href='admission.html'" class="btn btn-primary" style="margin-top: 2rem;">
+                    Return to Home
+                </button>
+            </div>
+        </div>
+
+        <form id="returningStudentForm">
+            <!-- Student ID Lookup -->
+            <div style="background: var(--gold-light); padding: 2rem; border-radius: 12px; margin: 2rem 0; border: 2px solid var(--secondary);">
+                <h3 style="color: var(--primary); margin-bottom: 1rem;">🆔 Enter Your Student ID</h3>
+                <div class="form-group">
+                    <label>Student ID Number <span class="required">*</span></label>
+                    <input type="text" name="studentId" id="studentId" placeholder="e.g., 2023-00001" required>
+                    <small class="field-hint">Your MSEUF student ID from last year</small>
+                </div>
+                <button type="button" onclick="lookupStudent()" class="btn btn-primary" style="margin-top: 1rem; width: 100%;">
+                    🔍 Look Up My Information
+                </button>
+            </div>
+
+            <!-- Student Info Display (Hidden until lookup) -->
+            <div id="studentInfoSection" class="hidden">
+                <!-- Shows their existing data -->
+                <div style="background: var(--success-light); padding: 1.5rem; border-radius: 12px; margin: 2rem 0; border: 2px solid var(--success);">
+                    <h3 style="color: var(--success);">✓ Student Found!</h3>
+                    <div id="studentDetails"></div>
+                </div>
+
+                <!-- Only ask what they need to enroll -->
+                <h3 style="color: var(--primary); margin: 2rem 0 1rem;">📚 Re-enrollment Information</h3>
+                
+                <div class="form-group">
+                    <label>Grade Level to Enroll (SY 2025-2026) <span class="required">*</span></label>
+                    <select name="newGradeLevel" id="newGradeLevel" required disabled>
+                        <option value="">Select grade level</option>
+                    </select>
+                    <small class="field-hint">What grade are you enrolling in this year?</small>
+                </div>
+
+                <div class="form-group hidden" id="newStrandGroup">
+                    <label>Strand (for SHS) <span class="required">*</span></label>
+                    <select name="newStrand" id="newStrand" disabled>
+                        <option value="">Select strand</option>
+                        <option value="STEM">STEM</option>
+                        <option value="HUMSS">HUMSS</option>
+                        <option value="ABM">ABM</option>
+                        <option value="TVL">TVL</option>
+                        <option value="GAS">GAS</option>
+                    </select>
+                </div>
+
+                <!-- Update Contact if Changed -->
+                <h3 style="color: var(--primary); margin: 2rem 0 1rem;">📱 Update Contact Info (if changed)</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" name="email" id="email" placeholder="Leave blank if unchanged">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="tel" name="phoneNumber" id="phoneNumber" placeholder="Leave blank if unchanged">
+                    </div>
+                </div>
+
+                <!-- Confirmation -->
+                <div class="form-group checkbox-group" style="margin-top: 2rem;">
+                    <label>
+                        <input type="checkbox" name="agreeTerms" required>
+                        I confirm that my information is still correct and I agree to re-enroll for SY 2025-2026
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-success" style="width: 100%; margin-top: 2rem;">
+                    ✓ Confirm Re-enrollment
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <script src="admission_returning.js"></script>
+</body>
+</html>
