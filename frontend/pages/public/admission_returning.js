@@ -371,27 +371,49 @@ function resetForm() {
 // EVENT LISTENERS & INITIALIZATION
 // ============================================
 
+// ============================================
+// CUSTOM MODAL FUNCTIONS
+// ============================================
+
+function showApplicationTypeModal() {
+    const modal = document.getElementById('confirmModal');
+    const badge = document.getElementById('modalTypeBadge');
+    const description = document.getElementById('modalDescription');
+    
+    // For returning student page
+    badge.textContent = 'RETURNING STUDENT';
+    description.innerHTML = 
+        'You are starting a <strong>RETURNING STUDENT</strong> application.<br>' +
+        'This is for students who were previously enrolled at MSEUF.';
+    
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden'; // Prevent scrolling
+}
+
+function confirmApplicationType() {
+    const modal = document.getElementById('confirmModal');
+    modal.classList.add('hidden');
+    document.body.style.overflow = 'auto';
+    
+    sessionStorage.setItem('admissionTypeWarning', 'true');
+    showToast('Application type confirmed. You may now proceed.', 'success');
+}
+
+function cancelApplicationType() {
+    window.location.href = 'admission.html';
+}
+
+// ============================================
+// EVENT LISTENERS & INITIALIZATION
+// ============================================
+
 document.addEventListener('DOMContentLoaded', () => {
-    // Confirm application type on first visit
+    // **UPDATED: Show custom modal instead of browser confirm**
     const hasShownWarning = sessionStorage.getItem('admissionTypeWarning');
     
     if (!hasShownWarning) {
         setTimeout(() => {
-            const userConfirmed = confirm(
-                '📋 CONFIRM APPLICATION TYPE\n\n' +
-                'You are starting a RETURNING STUDENT application.\n' +
-                'This is for students who were previously enrolled at MSEUF.\n\n' +
-                'Is this correct?\n\n' +
-                '• Click OK to continue with Returning Student application\n' +
-                '• Click Cancel to go back and choose a different type'
-            );
-            
-            if (!userConfirmed) {
-                window.location.href = 'admission.html';
-                return;
-            }
-            
-            sessionStorage.setItem('admissionTypeWarning', 'true');
+            showApplicationTypeModal(); // Use custom modal
         }, 500);
     }
     

@@ -1280,29 +1280,60 @@ function initializeAverageValidation() {
 // EVENT LISTENERS & INITIALIZATION
 // ============================================
 
+// ============================================
+// CUSTOM MODAL FUNCTIONS
+// ============================================
+
+function showApplicationTypeModal() {
+    const modal = document.getElementById('confirmModal');
+    const badge = document.getElementById('modalTypeBadge');
+    const description = document.getElementById('modalDescription');
+    
+    // Determine application type based on page
+    const isNewStudent = window.location.pathname.includes('new');
+    
+    if (isNewStudent) {
+        badge.textContent = 'NEW STUDENT';
+        description.innerHTML = 
+            'You are starting a <strong>NEW STUDENT</strong> application.<br>' +
+            'This is for students enrolling at MSEUF for the first time.';
+    } else {
+        badge.textContent = 'RETURNING STUDENT';
+        description.innerHTML = 
+            'You are starting a <strong>RETURNING STUDENT</strong> application.<br>' +
+            'This is for students who were previously enrolled at MSEUF.';
+    }
+    
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden'; // Prevent scrolling
+}
+
+function confirmApplicationType() {
+    const modal = document.getElementById('confirmModal');
+    modal.classList.add('hidden');
+    document.body.style.overflow = 'auto';
+    
+    sessionStorage.setItem('admissionTypeWarning', 'true');
+    showToast('Application type confirmed. You may now proceed.', 'success');
+}
+
+function cancelApplicationType() {
+    window.location.href = 'admission.html';
+}
+
+// ============================================
+// EVENT LISTENERS & INITIALIZATION
+// ============================================
+
 document.addEventListener('DOMContentLoaded', () => {
-    // **NEW: Confirm application type on first visit**
+    // **UPDATED: Show custom modal instead of browser confirm**
     const hasShownWarning = sessionStorage.getItem('admissionTypeWarning');
     const hasSavedData = localStorage.getItem('admissionFormData');
     
     if (!hasShownWarning && !hasSavedData) {
         setTimeout(() => {
-            const userConfirmed = confirm(
-                '📋 CONFIRM APPLICATION TYPE\n\n' +
-                'You are starting a NEW STUDENT application.\n' +
-                'This is for students enrolling at MSEUF for the first time.\n\n' +
-                'Is this correct?\n\n' +
-                '• Click OK to continue with New Student application\n' +
-                '• Click Cancel to go back and choose a different type'
-            );
-            
-            if (!userConfirmed) {
-                window.location.href = 'admission.html';
-                return;
-            }
-            
-            sessionStorage.setItem('admissionTypeWarning', 'true');
-        }, 500); // Small delay so page loads smoothly first
+            showApplicationTypeModal(); // Use custom modal
+        }, 500);
     }
     
     // Load saved data
@@ -1337,7 +1368,6 @@ document.addEventListener('DOMContentLoaded', () => {
         clearTimeout(STATE.autoSaveTimer);
         STATE.autoSaveTimer = setTimeout(() => {
             collectFormData();
-            updateFieldProgress(STATE.currentStep); // Track progress
             showToast('Form saved automatically', 'info');
         }, CONFIG.AUTO_SAVE_DELAY);
     });

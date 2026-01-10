@@ -7,6 +7,39 @@
     <link rel="stylesheet" href="admission_returning.css">
 </head>
 <body>
+    <!-- Custom Confirmation Modal -->
+    <div id="confirmModal" class="modal-overlay hidden">
+        <div class="modal-container">
+            <div class="modal-header">
+                <div class="modal-icon">📋</div>
+                <h2>CONFIRM APPLICATION TYPE</h2>
+            </div>
+            <div class="modal-body">
+                <div class="modal-type-badge" id="modalTypeBadge">
+                    NEW STUDENT
+                </div>
+                <p class="modal-description" id="modalDescription">
+                    You are starting a <strong>NEW STUDENT</strong> application.<br>
+                    This is for students enrolling at MSEUF for the first time.
+                </p>
+                <div class="modal-question">
+                    <strong>Is this correct?</strong>
+                </div>
+                <ul class="modal-instructions">
+                    <li>✓ Click <strong>"Yes, Continue"</strong> to proceed with this application type</li>
+                    <li>← Click <strong>"Go Back"</strong> to choose a different application type</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-cancel" onclick="cancelApplicationType()">
+                    ← Go Back
+                </button>
+                <button class="modal-btn modal-btn-confirm" onclick="confirmApplicationType()">
+                    Yes, Continue →
+                </button>
+            </div>
+        </div>
+    </div>
 <div class="container" style="max-width: 700px; margin: 3rem auto;">
     <div class="header">
         <!-- Back Button -->
