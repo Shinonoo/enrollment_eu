@@ -43,7 +43,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="page-wrapper">
         <!-- Progress Indicator -->
         <div class="progress-container">
@@ -377,6 +377,46 @@
         <strong style="color: var(--primary);">👋 Welcome New Student!</strong> Since you're enrolling for the first time at MSEUF, we need your previous academic records
     </div>
 
+    <!-- LRN SECTION - PRIORITY FIELD -->
+    <div style="background: linear-gradient(135deg, #fff8dc 0%, #fffef5 100%); border: 2px solid var(--secondary); padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem;">
+        <h3 style="color: var(--primary); font-size: 1.2rem; margin-bottom: 1rem; font-weight: 700;">
+            🆔 Learner Reference Number (LRN)
+        </h3>
+        
+        <div class="form-group" style="margin-bottom: 0;">
+            <label>LRN (Learner Reference Number) <span class="required">*</span></label>
+            <input type="text" 
+                   name="lrn" 
+                   id="lrn" 
+                   placeholder="Enter your 12-digit LRN" 
+                   maxlength="12" 
+                   pattern="\d{12}"
+                   required>
+            <small class="field-hint">
+                📌 Your unique 12-digit number from DepEd (found on your Report Card/Form 137)
+            </small>
+        </div>
+
+        <!-- LRN Help Section -->
+        <div style="background: rgba(255, 255, 255, 0.9); padding: 1rem; border-radius: 8px; margin-top: 1rem; border-left: 4px solid var(--primary);">
+            <details>
+                <summary style="color: var(--primary); font-weight: 600; cursor: pointer;">
+                    ❓ Where can I find my LRN?
+                </summary>
+                <ul style="margin: 0.75rem 0 0 1.5rem; color: var(--gray-700); line-height: 1.8;">
+                    <li>Check your <strong>Report Card (Form 138)</strong></li>
+                    <li>Look at your <strong>School Records (Form 137)</strong></li>
+                    <li>Ask your previous school's registrar</li>
+                    <li>It's a 12-digit number that looks like: <code>123456789012</code></li>
+                </ul>
+                <p style="margin-top: 1rem; color: var(--danger); font-weight: 600;">
+                    ⚠️ If you don't have an LRN yet, please contact the registrar's office immediately.
+                </p>
+            </details>
+        </div>
+    </div>
+    <!-- ^^^ THIS CLOSING DIV WAS MISSING! -->
+
     <div class="form-row">
         <div class="form-group">
             <label>School Level <span class="required">*</span></label>
@@ -485,7 +525,6 @@
         <small class="field-hint">Help us improve our outreach efforts</small>
     </div>
 </div>
-
 
                     <!-- ===== STEP 5: Review & Submit ===== -->
                     <div class="form-step" id="formStep5">
