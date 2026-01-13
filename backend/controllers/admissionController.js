@@ -1,320 +1,220 @@
-// controllers/admissionController.js - COMPLETE
-
+// ============================================
+// ADMISSION CONTROLLER
+// Manuel S. Enverga University Foundation Candelaria Inc.
+// ============================================
 const AdmissionModel = require('../models/admissionModel');
 
-// ============================================
-// 1. Submit Application (PUBLIC)
-// ============================================
+const admissionController = {
 
-const submitApplication = async (req, res) => {
-    try {
-        const {
-            lrn, first_name, middle_name, last_name, suffix,
-            date_of_birth, gender,
-            email, phone_number,
-            street, barangay, city, province, zip_code,
-            guardian_name, guardian_relationship, guardian_phone, guardian_email,
-            school_level, grade_level, previous_school, strand,
-            application_type
-        } = req.body;
+    // Submit new admission application
+    submitAdmission: async (req, res) => {
+        try {
+            const {
+                // Personal Info
+                firstName, middleName, lastName, suffix,
+                dateOfBirth, age, gender, placeOfBirth, nationality,
 
-        // Validate
-        if (!first_name || !last_name || !date_of_birth || !gender) {
-            return res.status(400).json({
-                error: 'Validation failed',
-                message: 'Required fields: First Name, Last Name, Date of Birth, Gender'
+                // Contact Info
+                email, phoneNumber,
+                streetAddress, barangay, city, province, zipCode,
+
+                // Guardian Info
+                guardianName, guardianRelationship, guardianPhone,
+                guardianEmail, guardianAddress,
+
+                // Academic Info
+                lrn, schoolLevel, gradeLevel, strand,
+                previousSchool, lastGradeCompleted, yearCompleted,
+                generalAverage, academicHonor, referralSource
+            } = req.body;
+
+            // Get uploaded photo info
+            let studentPhotoName = null;
+            let studentPhotoPath = null;
+
+            if (req.file) {
+                studentPhotoName = req.file.filename;
+                studentPhotoPath = '/uploads/student_photos/' + req.file.filename;
+            }
+
+            // Prepare admission data object
+            const admissionData = {
+                // Personal
+                firstName,
+                middleName: middleName || null,
+                lastName,
+                suffix: suffix || null,
+                dateOfBirth,
+                age: parseInt(age),
+                gender,
+                placeOfBirth,
+                nationality,
+
+                // Contact
+                email: email || null,
+                phoneNumber: phoneNumber || null,
+                streetAddress,
+                barangay,
+                city,
+                province,
+                zipCode: zipCode || null,
+
+                // Guardian
+                guardianName,
+                guardianRelationship,
+                guardianPhone,
+                guardianEmail: guardianEmail || null,
+                guardianAddress: guardianAddress || null,
+
+                // Academic
+                lrn,
+                schoolLevel,
+                gradeLevel,
+                strand: strand || null,
+                previousSchool,
+                lastGradeCompleted,
+                yearCompleted,
+                generalAverage: parseFloat(generalAverage),
+                academicHonor: academicHonor || null,
+                referralSource: referralSource || null,
+
+                // Photo
+                studentPhotoName,
+                studentPhotoPath
+            };
+
+            // Call model to create admission
+            const result = await AdmissionModel.createAdmission(admissionData);
+
+            res.status(201).json({
+                success: true,
+                message: 'Application submitted successfully',
+                applicationNumber: result.applicationNumber,
+                admissionId: result.admissionId
+            });
+
+        } catch (error) {
+            console.error('Admission submission error:', error);
+
+            // Handle specific errors
+            if (error.message.includes('LRN already registered')) {
+                return res.status(400).json({
+                    success: false,
+                    message: error.message
+                });
+            }
+
+            res.status(500).json({
+                success: false,
+                message: error.message || 'Failed to submit application'
             });
         }
+    },
 
-        if (!street || !city || !province) {
-            return res.status(400).json({
-                error: 'Validation failed',
-                message: 'Address fields (Street, City, Province) are required'
+    // Get admission status by application number
+    getAdmissionStatus: async (req, res) => {
+        try {
+            const { applicationNumber } = req.params;
+
+            const admission = await AdmissionModel.getAdmissionByApplicationNumber(applicationNumber);
+
+            if (!admission) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Application not found'
+                });
+            }
+
+            res.json({
+                success: true,
+                admission
+            });
+
+        } catch (error) {
+            console.error('Error fetching admission:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to fetch admission status'
             });
         }
+    },
 
-        if (!guardian_name || !guardian_relationship || !guardian_phone) {
-            return res.status(400).json({
-                error: 'Validation failed',
-                message: 'Guardian information is required'
+    // Get all pending admissions (for registrar dashboard)
+    getPendingAdmissions: async (req, res) => {
+        try {
+            const admissions = await AdmissionModel.getPendingAdmissions();
+
+            res.json({
+                success: true,
+                count: admissions.length,
+                admissions
+            });
+
+        } catch (error) {
+            console.error('Error fetching pending admissions:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to fetch pending admissions'
             });
         }
+    },
 
-        if (!school_level || !grade_level || !application_type) {
-            return res.status(400).json({
-                error: 'Validation failed',
-                message: 'School Level, Grade Level, and Application Type are required'
+    // Get admission by ID
+    getAdmissionById: async (req, res) => {
+        try {
+            const { admissionId } = req.params;
+
+            const admission = await AdmissionModel.getAdmissionById(admissionId);
+
+            if (!admission) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Admission not found'
+                });
+            }
+
+            res.json({
+                success: true,
+                admission
+            });
+
+        } catch (error) {
+            console.error('Error fetching admission:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to fetch admission details'
             });
         }
+    },
 
-        const result = await AdmissionModel.createAdmission({
-            lrn,
-            firstName: first_name,
-            middleName: middle_name,
-            lastName: last_name,
-            suffix: suffix,
-            dateOfBirth: date_of_birth,
-            gender: gender,
-            email: email,
-            phoneNumber: phone_number,
-            street: street,
-            barangay: barangay,
-            city: city,
-            province: province,
-            zipCode: zip_code,
-            guardianName: guardian_name,
-            guardianRelationship: guardian_relationship,
-            guardianPhone: guardian_phone,
-            guardianEmail: guardian_email,
-            schoolLevel: school_level,
-            gradeLevel: grade_level,
-            previousSchool: previous_school,
-            strand: strand,
-            applicationType: application_type
-        });
+    // Update admission status (for registrar workflow)
+    updateAdmissionStatus: async (req, res) => {
+        try {
+            const { admissionId } = req.params;
+            const { status, remarks, userId } = req.body;
 
-        if (req.body.guardians && Array.isArray(req.body.guardians)) {
-            await GuardianModel.addGuardians(result.insertId, req.body.guardians);
+            if (!status) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Status is required'
+                });
+            }
+
+            await AdmissionModel.updateAdmissionStatus(admissionId, status, remarks, userId);
+
+            res.json({
+                success: true,
+                message: 'Admission status updated successfully'
+            });
+
+        } catch (error) {
+            console.error('Error updating admission status:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to update admission status'
+            });
         }
-
-        res.status(201).json({
-        success: true,
-        message: 'Application submitted successfully',
-        applicationId: result.insertId,
-        referenceNumber: `APP-${result.insertId.toString().padStart(6, '0')}`
-        });
-
-    } catch (error) {
-        console.error('Submit application error:', error);
-        res.status(500).json({
-            error: 'Server error',
-            message: 'Failed to submit application',
-            details: process.env.NODE_ENV === 'development' ? error.message : undefined
-        });
     }
 };
 
-// ============================================
-// 2. Get All Applications (PROTECTED)
-// ============================================
-
-const getAllApplications = async (req, res) => {
-    try {
-        const { status, schoolLevel, gradeLevel, applicationType } = req.query;
-
-        const applications = await AdmissionModel.getAllAdmissions({
-            status, schoolLevel, gradeLevel, applicationType
-        });
-
-        res.json({
-            success: true,
-            count: applications.length,
-            applications
-        });
-
-    } catch (error) {
-        console.error('Get applications error:', error);
-        res.status(500).json({
-            error: 'Server error',
-            message: 'Failed to fetch applications'
-        });
-    }
-};
-
-// ============================================
-// 3. Get Application by ID (PROTECTED)
-// ============================================
-
-const getApplicationById = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const application = await AdmissionModel.getAdmissionById(id);
-
-        if (!application) {
-            return res.status(404).json({
-                error: 'Not found',
-                message: 'Application not found'
-            });
-        }
-        // Fetch guardians linked to this application
-        const guardians = await GuardianModel.getGuardiansByApplicationId(id);
-
-        res.json({
-            success: true,
-            application,
-            guardians
-        });
-
-    } catch (error) {
-        console.error('Get application error:', error);
-        res.status(500).json({
-            error: 'Server error',
-            message: 'Failed to fetch application'
-        });
-    }
-};
-
-// ============================================
-// 4. Update Application Status (PROTECTED)
-// ============================================
-
-const updateApplicationStatus = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { status, registrarNotes, rejectionReason } = req.body;
-
-        if (!['approved', 'rejected'].includes(status)) {
-            return res.status(400).json({
-                error: 'Validation failed',
-                message: 'Status must be "approved" or "rejected"'
-            });
-        }
-
-        if (status === 'rejected' && !rejectionReason) {
-            return res.status(400).json({
-                error: 'Validation failed',
-                message: 'Rejection reason is required'
-            });
-        }
-
-        await AdmissionModel.updateAdmissionStatus(id, status, registrarNotes, rejectionReason, req.user?.userId);
-
-        res.json({
-            success: true,
-            message: `Application ${status} successfully`
-        });
-
-    } catch (error) {
-        console.error('Update status error:', error);
-        res.status(500).json({
-            error: 'Server error',
-            message: 'Failed to update application status'
-        });
-    }
-};
-
-// ============================================
-// 5. Update Application (PROTECTED)
-// ============================================
-
-const updateApplication = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const {
-            lrn,
-            first_name, middle_name, last_name, suffix,
-            date_of_birth, gender,
-            email, phone_number,
-            street, barangay, city, province, zip_code,
-            guardian_name, guardian_relationship, guardian_phone, guardian_email,
-            school_level, grade_level, previous_school, strand,
-            application_type
-        } = req.body;
-
-        await AdmissionModel.updateApplication(id, {
-            lrn,
-            firstName: first_name,
-            middleName: middle_name,
-            lastName: last_name,
-            suffix: suffix,
-            dateOfBirth: date_of_birth,
-            gender: gender,
-            email: email,
-            phoneNumber: phone_number,
-            street: street,
-            barangay: barangay,
-            city: city,
-            province: province,
-            zipCode: zip_code,
-            guardianName: guardian_name,
-            guardianRelationship: guardian_relationship,
-            guardianPhone: guardian_phone,
-            guardianEmail: guardian_email,
-            schoolLevel: school_level,
-            gradeLevel: grade_level,
-            previousSchool: previous_school,
-            strand: strand,
-            applicationType: application_type
-        });
-
-        res.json({
-            success: true,
-            message: 'Application updated successfully'
-        });
-
-    } catch (error) {
-        console.error('Update application error:', error);
-        res.status(500).json({
-            error: 'Server error',
-            message: 'Failed to update application'
-        });
-    }
-};
-
-// ============================================
-// 6. Get Statistics (PROTECTED)
-// ============================================
-
-const getStatistics = async (req, res) => {
-    try {
-        const statistics = await AdmissionModel.getStatistics();
-
-        res.json({
-            success: true,
-            statistics
-        });
-
-    } catch (error) {
-        console.error('Get statistics error:', error);
-        res.status(500).json({
-            error: 'Server error',
-            message: 'Failed to fetch statistics'
-        });
-    }
-};
-
-// ============================================
-// 7. Send to Accountant (PROTECTED)
-// ============================================
-
-const sendToAccountant = async (req, res) => {
-    try {
-        const { applicationIds } = req.body;
-
-        if (!applicationIds || !Array.isArray(applicationIds) || applicationIds.length === 0) {
-            return res.status(400).json({
-                error: 'Validation failed',
-                message: 'Application IDs array is required'
-            });
-        }
-
-        await AdmissionModel.sendToAccountant(applicationIds);
-
-        res.json({
-            success: true,
-            message: 'Applications sent to accountant successfully'
-        });
-
-    } catch (error) {
-        console.error('Send to accountant error:', error);
-        res.status(500).json({
-            error: 'Server error',
-            message: 'Failed to send to accountant'
-        });
-    }
-};
-
-// ============================================
-// EXPORTS
-// ============================================
-
-module.exports = {
-    submitApplication,
-    getAllApplications,
-    getApplicationById,
-    updateApplicationStatus,
-    updateApplication,
-    getStatistics,
-    sendToAccountant,
-    
-};
+module.exports = admissionController;
