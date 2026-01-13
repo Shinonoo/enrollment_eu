@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>New Student Admission - Manuel S. Enverga University Foundation Inc.</title>
+    <title>New Student Admission - MSEUF Candelaria Inc.</title>
     <link rel="stylesheet" href="admission_new.css">
 </head>
 
@@ -46,6 +46,7 @@
 
     <div class="page-wrapper">
         <!-- Progress Indicator -->
+        <!-- Update progress indicator to include payment step -->
         <div class="progress-container">
             <div class="progress-bar" id="progressBar"></div>
             <div class="steps-indicator">
@@ -67,32 +68,38 @@
                 </div>
                 <div class="step" id="step5">
                     <div class="step-number">5</div>
+                    <div class="step-label">Payment</div> <!-- NEW STEP -->
+                </div>
+                <div class="step" id="step6">
+                    <div class="step-number">6</div>
                     <div class="step-label">Review</div>
                 </div>
             </div>
         </div>
 
         <div class="container">
-<!-- Header -->
-<div class="header">
-    <!-- Back Button -->
-    <a href="admission.html" class="back-to-home-btn" title="Go back to application type selection">
-        ← Back to Choose Application Type
-    </a>
-    
-    <h1>🎓 New Student Admission Form</h1>
-    <p>Manuel S. Enverga University Foundation Inc.</p>
-    <p style="font-size: 0.9rem; color: var(--gray-600); margin-top: 0.5rem;">School Year 2025-2026</p>
-    
-    <!-- Application Type Badge -->
-    <div style="background: var(--secondary); color: var(--primary-dark); padding: 0.75rem 1.5rem; border-radius: 8px; margin-top: 1rem; font-weight: 600; display: inline-block;">
-        📝 Application Type: <strong>NEW STUDENT</strong>
-    </div>
-    
-    <div style="background: rgba(249, 200, 70, 0.1); border: 2px solid var(--secondary); padding: 0.75rem 1.5rem; border-radius: 8px; margin-top: 1rem; font-weight: 600;">
-        Welcome! This simplified form is for first-time students at MSEUF
-    </div>
-</div>
+            <!-- Header -->
+            <div class="header">
+                <!-- Back Button -->
+                <a href="admission.html" class="back-to-home-btn" title="Go back to application type selection">
+                    ← Back to Choose Application Type
+                </a>
+
+                <h1>🎓 New Student Admission Form</h1>
+                <p>Manuel S. Enverga University Foundation Candelaria Inc.</p>
+                <p style="font-size: 0.9rem; color: var(--gray-600); margin-top: 0.5rem;">School Year 2025-2026</p>
+
+                <!-- Application Type Badge -->
+                <div
+                    style="background: var(--secondary); color: var(--primary-dark); padding: 0.75rem 1.5rem; border-radius: 8px; margin-top: 1rem; font-weight: 600; display: inline-block;">
+                    📝 Application Type: <strong>NEW STUDENT</strong>
+                </div>
+
+                <div
+                    style="background: rgba(249, 200, 70, 0.1); border: 2px solid var(--secondary); padding: 0.75rem 1.5rem; border-radius: 8px; margin-top: 1rem; font-weight: 600;">
+                    Welcome! This simplified form is for first-time students at MSEUF
+                </div>
+            </div>
 
             <!-- Toast Notifications -->
             <div id="toastContainer" class="toast-container"></div>
@@ -120,133 +127,138 @@
             <div id="formContainer">
                 <form id="admissionForm" autocomplete="off">
 
-<!-- ===== STEP 1: Personal Information ===== -->
-<div class="form-step active" id="formStep1">
-    <h2 class="step-title">Personal Information</h2>
-    <p class="step-description">Please provide your basic information as it appears on your birth certificate</p>
+                    <!-- ===== STEP 1: Personal Information ===== -->
+                    <div class="form-step active" id="formStep1">
+                        <h2 class="step-title">Personal Information</h2>
+                        <p class="step-description">Please provide your basic information as it appears on your birth
+                            certificate</p>
 
-    <div class="form-row">
-        <div class="form-group">
-            <label>First Name <span class="required">*</span></label>
-            <input type="text" name="firstName" placeholder="Juan" required>
-            <small class="field-hint">Enter your first name exactly as shown in your birth certificate</small>
-        </div>
-        <div class="form-group">
-            <label>Middle Name</label>
-            <input type="text" name="middleName" placeholder="Santos (optional)">
-            <small class="field-hint">Mother's maiden name or leave blank if not applicable</small>
-        </div>
-    </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>First Name <span class="required">*</span></label>
+                                <input type="text" name="firstName" placeholder="Juan" required>
+                                <small class="field-hint">Enter your first name exactly as shown in your birth
+                                    certificate</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Middle Name</label>
+                                <input type="text" name="middleName" placeholder="Santos (optional)">
+                                <small class="field-hint">Mother's maiden name or leave blank if not applicable</small>
+                            </div>
+                        </div>
 
-    <div class="form-row">
-        <div class="form-group">
-            <label>Last Name <span class="required">*</span></label>
-            <input type="text" name="lastName" placeholder="Dela Cruz" required>
-            <small class="field-hint">Your family name as shown in official documents</small>
-        </div>
-        <div class="form-group">
-            <label>Suffix</label>
-            <input type="text" name="suffix" placeholder="Jr., Sr., III, IV (optional)">
-            <small class="field-hint">Only if applicable to your name</small>
-        </div>
-    </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Last Name <span class="required">*</span></label>
+                                <input type="text" name="lastName" placeholder="Dela Cruz" required>
+                                <small class="field-hint">Your family name as shown in official documents</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Suffix</label>
+                                <input type="text" name="suffix" placeholder="Jr., Sr., III, IV (optional)">
+                                <small class="field-hint">Only if applicable to your name</small>
+                            </div>
+                        </div>
 
-    <div class="form-row">
-        <div class="form-group">
-            <label>Date of Birth <span class="required">*</span></label>
-            <input type="date" name="dateOfBirth" id="dateOfBirth" required max="2015-12-31">
-            <small id="ageDisplay" class="field-hint">You must be at least 10 years old to enroll</small>
-        </div>
-        <div class="form-group">
-            <label>Age</label>
-            <input type="text" name="age" id="ageField" placeholder="Age will auto-calculate" readonly style="background-color: var(--gray-100); cursor: not-allowed;">
-            <small class="field-hint">Automatically calculated from date of birth</small>
-        </div>
-    </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Date of Birth <span class="required">*</span></label>
+                                <input type="date" name="dateOfBirth" id="dateOfBirth" required max="2015-12-31">
+                                <small id="ageDisplay" class="field-hint">You must be at least 10 years old to
+                                    enroll</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Age</label>
+                                <input type="text" name="age" id="ageField" placeholder="Age will auto-calculate"
+                                    readonly style="background-color: var(--gray-100); cursor: not-allowed;">
+                                <small class="field-hint">Automatically calculated from date of birth</small>
+                            </div>
+                        </div>
 
-    <div class="form-row">
-        <div class="form-group">
-            <label>Gender <span class="required">*</span></label>
-            <select name="gender" required>
-                <option value="">Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Prefer not to say">Prefer not to say</option>
-            </select>
-            <small class="field-hint">Select your gender identity</small>
-        </div>
-        <div class="form-group">
-            <label>Place of Birth <span class="required">*</span></label>
-            <input type="text" name="placeOfBirth" placeholder="e.g., Lucena City, Quezon" required>
-            <small class="field-hint">City/Municipality where you were born</small>
-        </div>
-    </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Gender <span class="required">*</span></label>
+                                <select name="gender" required>
+                                    <option value="">Select Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Prefer not to say">Prefer not to say</option>
+                                </select>
+                                <small class="field-hint">Select your gender identity</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Place of Birth <span class="required">*</span></label>
+                                <input type="text" name="placeOfBirth" placeholder="e.g., Lucena City, Quezon" required>
+                                <small class="field-hint">City/Municipality where you were born</small>
+                            </div>
+                        </div>
 
-    <div class="form-row">
-        <div class="form-group">
-            <label>Nationality <span class="required">*</span></label>
-            <input type="text" name="nationality" placeholder="Filipino" required value="Filipino">
-            <small class="field-hint">Your citizenship</small>
-        </div>
-        <div class="form-group">
-            <!-- Empty space for alignment -->
-        </div>
-    </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Nationality <span class="required">*</span></label>
+                                <input type="text" name="nationality" placeholder="Filipino" required value="Filipino">
+                                <small class="field-hint">Your citizenship</small>
+                            </div>
+                            <div class="form-group">
+                                <!-- Empty space for alignment -->
+                            </div>
+                        </div>
 
-    <!-- STUDENT PHOTO UPLOAD SECTION -->
-    <div style="background: var(--gold-light); padding: 1.5rem; border-radius: 12px; margin: 2rem 0; border: 2px solid var(--secondary);">
-        <h3 style="color: var(--primary); font-size: 1.2rem; margin-bottom: 1rem; font-weight: 700;">
-            📷 Student Photo
-        </h3>
-        
-        <div class="form-group">
-            <label>Upload Your Photo (2x2) <span class="required">*</span></label>
-            <input type="file" 
-                   name="studentPhoto" 
-                   id="studentPhoto" 
-                   accept="image/jpeg,image/jpg,image/png" 
-                   required
-                   style="padding: 0.75rem; border: 2px dashed var(--secondary); background: var(--white);">
-            <small class="field-hint" style="display: block; margin-top: 0.5rem;">
-                📌 Requirements: Recent photo (white background), JPEG/PNG format, maximum 2MB
-            </small>
-        </div>
+                        <!-- STUDENT PHOTO UPLOAD SECTION -->
+                        <div
+                            style="background: var(--gold-light); padding: 1.5rem; border-radius: 12px; margin: 2rem 0; border: 2px solid var(--secondary);">
+                            <h3
+                                style="color: var(--primary); font-size: 1.2rem; margin-bottom: 1rem; font-weight: 700;">
+                                📷 Student Photo
+                            </h3>
 
-        <!-- Photo Preview -->
-        <div id="photoPreviewContainer" style="display: none; margin-top: 1rem;">
-            <label style="display: block; margin-bottom: 0.5rem; color: var(--primary); font-weight: 600;">Photo Preview:</label>
-            <div style="display: flex; align-items: center; gap: 1rem;">
-                <img id="photoPreview" 
-                     src="" 
-                     alt="Photo Preview" 
-                     style="width: 150px; height: 150px; object-fit: cover; border: 3px solid var(--primary); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-                <div>
-                    <p id="photoFileName" style="color: var(--gray-700); font-weight: 600; margin-bottom: 0.5rem;"></p>
-                    <p id="photoFileSize" style="color: var(--gray-600); font-size: 0.9rem;"></p>
-                    <button type="button" 
-                            onclick="removePhoto()" 
-                            style="margin-top: 0.5rem; padding: 0.5rem 1rem; background: var(--danger); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
-                        🗑️ Remove Photo
-                    </button>
-                </div>
-            </div>
-        </div>
+                            <div class="form-group">
+                                <label>Upload Your Photo (2x2) <span class="required">*</span></label>
+                                <input type="file" name="studentPhoto" id="studentPhoto"
+                                    accept="image/jpeg,image/jpg,image/png" required
+                                    style="padding: 0.75rem; border: 2px dashed var(--secondary); background: var(--white);">
+                                <small class="field-hint" style="display: block; margin-top: 0.5rem;">
+                                    📌 Requirements: Recent photo (white background), JPEG/PNG format, maximum 2MB
+                                </small>
+                            </div>
 
-        <!-- Photo Guidelines -->
-        <div style="background: rgba(255, 255, 255, 0.9); padding: 1rem; border-radius: 8px; margin-top: 1rem; border-left: 4px solid var(--primary);">
-            <strong style="color: var(--primary);">📋 Photo Guidelines:</strong>
-            <ul style="margin: 0.5rem 0 0 1.5rem; color: var(--gray-700); line-height: 1.8;">
-                <li>Recent photo taken within the last 6 months</li>
-                <li>White or light-colored background</li>
-                <li>Full face, front view with neutral expression</li>
-                <li>No eyeglasses with dark lenses</li>
-                <li>File format: JPG, JPEG, or PNG</li>
-                <li>File size: Maximum 2MB</li>
-                <li>Recommended resolution: At least 800 x 800 pixels</li>
-            </ul>
-        </div>
-    </div>
-</div>
+                            <!-- Photo Preview -->
+                            <div id="photoPreviewContainer" style="display: none; margin-top: 1rem;">
+                                <label
+                                    style="display: block; margin-bottom: 0.5rem; color: var(--primary); font-weight: 600;">Photo
+                                    Preview:</label>
+                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                    <img id="photoPreview" src="" alt="Photo Preview"
+                                        style="width: 150px; height: 150px; object-fit: cover; border: 3px solid var(--primary); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                                    <div>
+                                        <p id="photoFileName"
+                                            style="color: var(--gray-700); font-weight: 600; margin-bottom: 0.5rem;">
+                                        </p>
+                                        <p id="photoFileSize" style="color: var(--gray-600); font-size: 0.9rem;"></p>
+                                        <button type="button" onclick="removePhoto()"
+                                            style="margin-top: 0.5rem; padding: 0.5rem 1rem; background: var(--danger); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                                            🗑️ Remove Photo
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Photo Guidelines -->
+                            <div
+                                style="background: rgba(255, 255, 255, 0.9); padding: 1rem; border-radius: 8px; margin-top: 1rem; border-left: 4px solid var(--primary);">
+                                <strong style="color: var(--primary);">📋 Photo Guidelines:</strong>
+                                <ul style="margin: 0.5rem 0 0 1.5rem; color: var(--gray-700); line-height: 1.8;">
+                                    <li>Recent photo taken within the last 6 months</li>
+                                    <li>White or light-colored background</li>
+                                    <li>Full face, front view with neutral expression</li>
+                                    <li>No eyeglasses with dark lenses</li>
+                                    <li>File format: JPG, JPEG, or PNG</li>
+                                    <li>File size: Maximum 2MB</li>
+                                    <li>Recommended resolution: At least 800 x 800 pixels</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
 
 
 
@@ -259,7 +271,8 @@
                             <div class="form-group">
                                 <label>Email Address</label>
                                 <input type="email" name="email" placeholder="student@example.com">
-                                <small class="field-hint">We'll send your admission updates here (optional for new students)</small>
+                                <small class="field-hint">We'll send your admission updates here (optional for new
+                                    students)</small>
                             </div>
                             <div class="form-group">
                                 <label>Phone Number</label>
@@ -269,8 +282,9 @@
                         </div>
 
                         <!-- ADDRESS FIELDS -->
-                        <h3 style="color: var(--primary); font-size: 1.2rem; margin: 2rem 0 1rem; font-weight: 700;">Current Residential Address</h3>
-                        
+                        <h3 style="color: var(--primary); font-size: 1.2rem; margin: 2rem 0 1rem; font-weight: 700;">
+                            Current Residential Address</h3>
+
                         <div class="form-group">
                             <label>House/Unit/Block No. and Street <span class="required">*</span></label>
                             <input type="text" name="streetAddress" placeholder="123 Rizal Street" required>
@@ -319,11 +333,14 @@
                         <h2 class="step-title">Parent/Guardian Information</h2>
                         <p class="step-description">Emergency contact and legal guardian details</p>
 
-                        <div style="background: var(--gold-light); border-left: 4px solid var(--secondary); padding: 1rem; border-radius: 8px; margin-bottom: 2rem;">
-                            <strong style="color: var(--primary);">📌 Important:</strong> Please provide at least one parent or legal guardian's information
+                        <div
+                            style="background: var(--gold-light); border-left: 4px solid var(--secondary); padding: 1rem; border-radius: 8px; margin-bottom: 2rem;">
+                            <strong style="color: var(--primary);">📌 Important:</strong> Please provide at least one
+                            parent or legal guardian's information
                         </div>
 
-                        <h3 style="color: var(--primary); font-size: 1.2rem; margin: 2rem 0 1rem; font-weight: 700;">Primary Guardian</h3>
+                        <h3 style="color: var(--primary); font-size: 1.2rem; margin: 2rem 0 1rem; font-weight: 700;">
+                            Primary Guardian</h3>
 
                         <div class="form-row">
                             <div class="form-group">
@@ -363,176 +380,326 @@
 
                         <div class="form-group">
                             <label>Guardian Address</label>
-                            <input type="text" name="guardianAddress" placeholder="Leave blank if same as student address">
+                            <input type="text" name="guardianAddress"
+                                placeholder="Leave blank if same as student address">
                             <small class="field-hint">Only fill if different from student's address</small>
                         </div>
                     </div>
 
-<!-- ===== STEP 4: Academic Information ===== -->
-<div class="form-step" id="formStep4">
-    <h2 class="step-title">Academic Information</h2>
-    <p class="step-description">Tell us about your enrollment plans at MSEUF</p>
+                    <!-- ===== STEP 4: Academic Information ===== -->
+                    <div class="form-step" id="formStep4">
+                        <h2 class="step-title">Academic Information</h2>
+                        <p class="step-description">Tell us about your enrollment plans at MSEUF</p>
 
-    <div style="background: var(--gold-light); border-left: 4px solid var(--secondary); padding: 1rem; border-radius: 8px; margin-bottom: 2rem;">
-        <strong style="color: var(--primary);">👋 Welcome New Student!</strong> Since you're enrolling for the first time at MSEUF, we need your previous academic records
-    </div>
+                        <div
+                            style="background: var(--gold-light); border-left: 4px solid var(--secondary); padding: 1rem; border-radius: 8px; margin-bottom: 2rem;">
+                            <strong style="color: var(--primary);">👋 Welcome New Student!</strong> Since you're
+                            enrolling for the first time at MSEUF, we need your previous academic records
+                        </div>
 
-    <!-- LRN SECTION - PRIORITY FIELD -->
-    <div style="background: linear-gradient(135deg, #fff8dc 0%, #fffef5 100%); border: 2px solid var(--secondary); padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem;">
-        <h3 style="color: var(--primary); font-size: 1.2rem; margin-bottom: 1rem; font-weight: 700;">
-            🆔 Learner Reference Number (LRN)
-        </h3>
-        
-        <div class="form-group" style="margin-bottom: 0;">
-            <label>LRN (Learner Reference Number) <span class="required">*</span></label>
-            <input type="text" 
-                   name="lrn" 
-                   id="lrn" 
-                   placeholder="Enter your 12-digit LRN" 
-                   maxlength="12" 
-                   pattern="\d{12}"
-                   required>
-            <small class="field-hint">
-                📌 Your unique 12-digit number from DepEd (found on your Report Card/Form 137)
-            </small>
-        </div>
+                        <!-- LRN SECTION - PRIORITY FIELD -->
+                        <div
+                            style="background: linear-gradient(135deg, #fff8dc 0%, #fffef5 100%); border: 2px solid var(--secondary); padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem;">
+                            <h3
+                                style="color: var(--primary); font-size: 1.2rem; margin-bottom: 1rem; font-weight: 700;">
+                                🆔 Learner Reference Number (LRN)
+                            </h3>
 
-        <!-- LRN Help Section -->
-        <div style="background: rgba(255, 255, 255, 0.9); padding: 1rem; border-radius: 8px; margin-top: 1rem; border-left: 4px solid var(--primary);">
-            <details>
-                <summary style="color: var(--primary); font-weight: 600; cursor: pointer;">
-                    ❓ Where can I find my LRN?
-                </summary>
-                <ul style="margin: 0.75rem 0 0 1.5rem; color: var(--gray-700); line-height: 1.8;">
-                    <li>Check your <strong>Report Card (Form 138)</strong></li>
-                    <li>Look at your <strong>School Records (Form 137)</strong></li>
-                    <li>Ask your previous school's registrar</li>
-                    <li>It's a 12-digit number that looks like: <code>123456789012</code></li>
-                </ul>
-                <p style="margin-top: 1rem; color: var(--danger); font-weight: 600;">
-                    ⚠️ If you don't have an LRN yet, please contact the registrar's office immediately.
-                </p>
-            </details>
-        </div>
-    </div>
-    <!-- ^^^ THIS CLOSING DIV WAS MISSING! -->
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label>LRN (Learner Reference Number) <span class="required">*</span></label>
+                                <input type="text" name="lrn" id="lrn" placeholder="Enter your 12-digit LRN"
+                                    maxlength="12" pattern="\d{12}" required>
+                                <small class="field-hint">
+                                    📌 Your unique 12-digit number from DepEd (found on your Report Card/Form 137)
+                                </small>
+                            </div>
 
-    <div class="form-row">
-        <div class="form-group">
-            <label>School Level <span class="required">*</span></label>
-            <select name="schoolLevel" id="schoolLevel" required onchange="updateGradeLevels()">
-                <option value="">Select Level</option>
-                <option value="JHS">Junior High School (JHS)</option>
-                <option value="SHS">Senior High School (SHS)</option>
-            </select>
-            <small class="field-hint">Which school level are you enrolling in?</small>
-        </div>
-        <div class="form-group">
-            <label>Grade Level to Enroll <span class="required">*</span></label>
-            <select name="gradeLevel" id="gradeLevel" required disabled>
-                <option value="">First select a school level</option>
-            </select>
-            <small class="field-hint">What grade will you be entering?</small>
-        </div>
-    </div>
+                            <!-- LRN Help Section -->
+                            <div
+                                style="background: rgba(255, 255, 255, 0.9); padding: 1rem; border-radius: 8px; margin-top: 1rem; border-left: 4px solid var(--primary);">
+                                <details>
+                                    <summary style="color: var(--primary); font-weight: 600; cursor: pointer;">
+                                        ❓ Where can I find my LRN?
+                                    </summary>
+                                    <ul style="margin: 0.75rem 0 0 1.5rem; color: var(--gray-700); line-height: 1.8;">
+                                        <li>Check your <strong>Report Card (Form 138)</strong></li>
+                                        <li>Look at your <strong>School Records (Form 137)</strong></li>
+                                        <li>Ask your previous school's registrar</li>
+                                        <li>It's a 12-digit number that looks like: <code>123456789012</code></li>
+                                    </ul>
+                                    <p style="margin-top: 1rem; color: var(--danger); font-weight: 600;">
+                                        ⚠️ If you don't have an LRN yet, please contact the registrar's office
+                                        immediately.
+                                    </p>
+                                </details>
+                            </div>
+                        </div>
+                        <!-- ^^^ THIS CLOSING DIV WAS MISSING! -->
 
-    <!-- STRAND: ONLY FOR SHS -->
-    <div class="form-group hidden" id="strandGroup">
-        <label>Academic Strand (for SHS) <span class="required">*</span></label>
-        <select name="strand" id="strand" disabled>
-            <option value="">Select your preferred strand</option>
-            <option value="STEM">STEM - Science, Technology, Engineering, Mathematics</option>
-            <option value="HUMSS">HUMSS - Humanities and Social Sciences</option>
-            <option value="ABM">ABM - Accountancy, Business and Management</option>
-            <option value="TVL">TVL - Technical-Vocational-Livelihood</option>
-            <option value="GAS">GAS - General Academic Strand</option>
-        </select>
-        <small class="field-hint">Choose your academic track (for Grade 11-12 only)</small>
-    </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>School Level <span class="required">*</span></label>
+                                <select name="schoolLevel" id="schoolLevel" required onchange="updateGradeLevels()">
+                                    <option value="">Select Level</option>
+                                    <option value="JHS">Junior High School (JHS)</option>
+                                    <option value="SHS">Senior High School (SHS)</option>
+                                </select>
+                                <small class="field-hint">Which school level are you enrolling in?</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Grade Level to Enroll <span class="required">*</span></label>
+                                <select name="gradeLevel" id="gradeLevel" required disabled>
+                                    <option value="">First select a school level</option>
+                                </select>
+                                <small class="field-hint">What grade will you be entering?</small>
+                            </div>
+                        </div>
 
-    <!-- PREVIOUS ACADEMIC INFORMATION (Required for All) -->
-    <div id="previousAcademicInfo" class="hidden">
-        <h3 style="color: var(--primary); font-size: 1.2rem; margin: 2rem 0 1rem; font-weight: 700;">
-            📋 Previous School Information
-        </h3>
+                        <!-- STRAND: ONLY FOR SHS -->
+                        <div class="form-group hidden" id="strandGroup">
+                            <label>Academic Strand (for SHS) <span class="required">*</span></label>
+                            <select name="strand" id="strand" disabled>
+                                <option value="">Select your preferred strand</option>
+                                <option value="STEM">STEM - Science, Technology, Engineering, Mathematics</option>
+                                <option value="HUMSS">HUMSS - Humanities and Social Sciences</option>
+                                <option value="ABM">ABM - Accountancy, Business and Management</option>
+                                <option value="TVL">TVL - Technical-Vocational-Livelihood</option>
+                                <option value="GAS">GAS - General Academic Strand</option>
+                            </select>
+                            <small class="field-hint">Choose your academic track (for Grade 11-12 only)</small>
+                        </div>
 
-        <div class="form-group">
-            <label>Last School Attended <span class="required">*</span></label>
-            <input type="text" name="previousSchool" id="previousSchool" placeholder="Enter the name of your previous school" required disabled>
-            <small class="field-hint">The school you graduated from or last attended</small>
-        </div>
+                        <!-- PREVIOUS ACADEMIC INFORMATION (Required for All) -->
+                        <div id="previousAcademicInfo" class="hidden">
+                            <h3
+                                style="color: var(--primary); font-size: 1.2rem; margin: 2rem 0 1rem; font-weight: 700;">
+                                📋 Previous School Information
+                            </h3>
 
-        <div class="form-row">
-            <div class="form-group">
-                <label>Last Grade/Year Completed <span class="required">*</span></label>
-                <select name="lastGradeCompleted" id="lastGradeCompleted" required disabled>
-                    <option value="">Select last grade completed</option>
-                    <option value="Grade 6">Grade 6 (Elementary)</option>
-                    <option value="Grade 7">Grade 7</option>
-                    <option value="Grade 8">Grade 8</option>
-                    <option value="Grade 9">Grade 9</option>
-                    <option value="Grade 10">Grade 10</option>
-                    <option value="Grade 11">Grade 11</option>
-                    <option value="Grade 12">Grade 12</option>
-                </select>
-                <small class="field-hint">What was the last grade you completed?</small>
-            </div>
-            <div class="form-group">
-                <label>School Year Completed <span class="required">*</span></label>
-                <input type="text" name="yearCompleted" id="yearCompleted" placeholder="e.g., 2024-2025" required disabled>
-                <small class="field-hint">When did you complete that grade?</small>
-            </div>
-        </div>
+                            <div class="form-group">
+                                <label>Last School Attended <span class="required">*</span></label>
+                                <input type="text" name="previousSchool" id="previousSchool"
+                                    placeholder="Enter the name of your previous school" required disabled>
+                                <small class="field-hint">The school you graduated from or last attended</small>
+                            </div>
 
-        <!-- GENERAL AVERAGE (Required for All) -->
-        <div class="form-row">
-            <div class="form-group">
-                <label>General Average <span class="required">*</span></label>
-                <input type="number" 
-                       name="generalAverage" 
-                       id="generalAverage" 
-                       placeholder="e.g., 90.5" 
-                       min="75" 
-                       max="100" 
-                       step="0.01"
-                       required
-                       disabled>
-                <small class="field-hint" id="averageHint">Your final general average (75-100 scale)</small>
-            </div>
-            <div class="form-group" id="academicHonorGroup">
-                <!-- This will be populated dynamically -->
-            </div>
-        </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Last Grade/Year Completed <span class="required">*</span></label>
+                                    <select name="lastGradeCompleted" id="lastGradeCompleted" required disabled>
+                                        <option value="">Select last grade completed</option>
+                                        <option value="Grade 6">Grade 6 (Elementary)</option>
+                                        <option value="Grade 7">Grade 7</option>
+                                        <option value="Grade 8">Grade 8</option>
+                                        <option value="Grade 9">Grade 9</option>
+                                        <option value="Grade 10">Grade 10</option>
+                                        <option value="Grade 11">Grade 11</option>
+                                        <option value="Grade 12">Grade 12</option>
+                                    </select>
+                                    <small class="field-hint">What was the last grade you completed?</small>
+                                </div>
+                                <div class="form-group">
+                                    <label>School Year Completed <span class="required">*</span></label>
+                                    <input type="text" name="yearCompleted" id="yearCompleted"
+                                        placeholder="e.g., 2024-2025" required disabled>
+                                    <small class="field-hint">When did you complete that grade?</small>
+                                </div>
+                            </div>
 
-        <div style="background: rgba(255, 255, 255, 0.8); padding: 1rem; border-radius: 8px; margin-top: 1rem; border-left: 4px solid var(--primary);">
-            <strong style="color: var(--primary);">💡 Note:</strong> 
-            <span style="color: var(--gray-700);">This information helps us assess scholarship eligibility and proper class placement.</span>
-        </div>
-    </div>
+                            <!-- GENERAL AVERAGE (Required for All) -->
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>General Average <span class="required">*</span></label>
+                                    <input type="number" name="generalAverage" id="generalAverage"
+                                        placeholder="e.g., 90.5" min="75" max="100" step="0.01" required disabled>
+                                    <small class="field-hint" id="averageHint">Your final general average (75-100
+                                        scale)</small>
+                                </div>
+                                <div class="form-group" id="academicHonorGroup">
+                                    <!-- This will be populated dynamically -->
+                                </div>
+                            </div>
 
-    <div class="form-group" style="margin-top: 2rem;">
-        <label>How did you hear about MSEUF?</label>
-        <select name="referralSource">
-            <option value="">Select source (optional)</option>
-            <option value="School Website">School Website</option>
-            <option value="Facebook/Social Media">Facebook/Social Media</option>
-            <option value="Friend/Relative">Friend/Relative Referral</option>
-            <option value="School Visit">School Visit/Open House</option>
-            <option value="Alumni">Alumni Recommendation</option>
-            <option value="Advertisement">Advertisement</option>
-            <option value="Other">Other</option>
-        </select>
-        <small class="field-hint">Help us improve our outreach efforts</small>
-    </div>
-</div>
+                            <div
+                                style="background: rgba(255, 255, 255, 0.8); padding: 1rem; border-radius: 8px; margin-top: 1rem; border-left: 4px solid var(--primary);">
+                                <strong style="color: var(--primary);">💡 Note:</strong>
+                                <span style="color: var(--gray-700);">This information helps us assess scholarship
+                                    eligibility and proper class placement.</span>
+                            </div>
+                        </div>
 
-                    <!-- ===== STEP 5: Review & Submit ===== -->
+                        <div class="form-group" style="margin-top: 2rem;">
+                            <label>How did you hear about MSEUF?</label>
+                            <select name="referralSource">
+                                <option value="">Select source (optional)</option>
+                                <option value="School Website">School Website</option>
+                                <option value="Facebook/Social Media">Facebook/Social Media</option>
+                                <option value="Friend/Relative">Friend/Relative Referral</option>
+                                <option value="School Visit">School Visit/Open House</option>
+                                <option value="Alumni">Alumni Recommendation</option>
+                                <option value="Advertisement">Advertisement</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <small class="field-hint">Help us improve our outreach efforts</small>
+                        </div>
+                    </div>
+
+                    <!-- ===== STEP 5: Payment Scheme Selection ===== -->
                     <div class="form-step" id="formStep5">
+                        <h2 class="step-title">💳 Payment Scheme Selection</h2>
+                        <p class="step-description">Choose how you would like to pay your tuition and fees</p>
+
+                        <div
+                            style="background: var(--gold-light); border-left: 4px solid var(--secondary); padding: 1rem; border-radius: 8px; margin-bottom: 2rem;">
+                            <strong style="color: var(--primary);">📌 Important:</strong> Select a payment plan that
+                            works best for your family. You can discuss payment options with the accounting office later
+                            if needed.
+                        </div>
+
+                        <!-- Payment Scheme Options -->
+                        <div class="form-group">
+                            <label>Select Payment Scheme <span class="required">*</span></label>
+                            <div id="paymentSchemeContainer"
+                                style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
+
+                                <!-- Full Payment Option -->
+                                <div class="payment-option" data-scheme="full">
+                                    <input type="radio" name="paymentScheme" id="paymentFull" value="full" required>
+                                    <label for="paymentFull" class="payment-card">
+                                        <div class="payment-header">
+                                            <span class="payment-icon">💰</span>
+                                            <div class="payment-title">
+                                                <strong>Full Payment</strong>
+                                                <span class="payment-discount">5% Discount</span>
+                                            </div>
+                                        </div>
+                                        <div class="payment-description">
+                                            Pay the entire tuition fee at enrollment. Get a 5% discount on total fees.
+                                        </div>
+                                        <div class="payment-details">
+                                            <span class="payment-due">📅 Due: Upon Enrollment</span>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <!-- Semi-Annual Payment Option -->
+                                <div class="payment-option" data-scheme="semi-annual">
+                                    <input type="radio" name="paymentScheme" id="paymentSemi" value="semi-annual">
+                                    <label for="paymentSemi" class="payment-card">
+                                        <div class="payment-header">
+                                            <span class="payment-icon">📊</span>
+                                            <div class="payment-title">
+                                                <strong>Semi-Annual (2 Payments)</strong>
+                                                <span class="payment-discount">3% Discount</span>
+                                            </div>
+                                        </div>
+                                        <div class="payment-description">
+                                            Split payment into 2 installments. Get a 3% discount on total fees.
+                                        </div>
+                                        <div class="payment-details">
+                                            <span class="payment-due">📅 1st Payment: Upon Enrollment</span>
+                                            <span class="payment-due">📅 2nd Payment: Mid-Year (January)</span>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <!-- Quarterly Payment Option -->
+                                <div class="payment-option" data-scheme="quarterly">
+                                    <input type="radio" name="paymentScheme" id="paymentQuarterly" value="quarterly">
+                                    <label for="paymentQuarterly" class="payment-card">
+                                        <div class="payment-header">
+                                            <span class="payment-icon">📅</span>
+                                            <div class="payment-title">
+                                                <strong>Quarterly (4 Payments)</strong>
+                                                <span class="payment-discount">No Discount</span>
+                                            </div>
+                                        </div>
+                                        <div class="payment-description">
+                                            Divide payment into 4 equal installments throughout the school year.
+                                        </div>
+                                        <div class="payment-details">
+                                            <span class="payment-due">📅 Payments every quarter</span>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <!-- Monthly Payment Option -->
+                                <div class="payment-option" data-scheme="monthly">
+                                    <input type="radio" name="paymentScheme" id="paymentMonthly" value="monthly">
+                                    <label for="paymentMonthly" class="payment-card">
+                                        <div class="payment-header">
+                                            <span class="payment-icon">📆</span>
+                                            <div class="payment-title">
+                                                <strong>Monthly (10 Payments)</strong>
+                                                <span class="payment-discount">No Discount</span>
+                                            </div>
+                                        </div>
+                                        <div class="payment-description">
+                                            Pay monthly installments from June to March. More manageable amounts.
+                                        </div>
+                                        <div class="payment-details">
+                                            <span class="payment-due">📅 Monthly payments (10 months)</span>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <!-- Installment Plan (For those who need special arrangements) -->
+                                <div class="payment-option" data-scheme="installment">
+                                    <input type="radio" name="paymentScheme" id="paymentInstallment"
+                                        value="installment">
+                                    <label for="paymentInstallment" class="payment-card">
+                                        <div class="payment-header">
+                                            <span class="payment-icon">🤝</span>
+                                            <div class="payment-title">
+                                                <strong>Custom Installment Plan</strong>
+                                                <span class="payment-discount">Subject to Approval</span>
+                                            </div>
+                                        </div>
+                                        <div class="payment-description">
+                                            Need a special payment arrangement? Select this to discuss with the
+                                            accounting office.
+                                        </div>
+                                        <div class="payment-details">
+                                            <span class="payment-due">📋 Will be arranged with accounting office</span>
+                                        </div>
+                                    </label>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- Payment Scheme Notes -->
+                        <div
+                            style="background: rgba(255, 255, 255, 0.9); padding: 1.5rem; border-radius: 8px; margin-top: 2rem; border: 2px solid var(--primary);">
+                            <h4 style="color: var(--primary); margin-bottom: 1rem; font-weight: 700;">📋 Payment Terms &
+                                Conditions</h4>
+                            <ul style="margin: 0 0 0 1.5rem; color: var(--gray-700); line-height: 1.8;">
+                                <li>All payments must be made at the MSEUF Candelaria cashier's office or through
+                                    authorized payment channels</li>
+                                <li>Discounts are automatically applied based on your selected payment scheme</li>
+                                <li>Downpayment/First installment is due upon enrollment</li>
+                                <li>Late payment charges may apply for missed installments</li>
+                                <li>Payment scheme can be changed before final enrollment with accounting office
+                                    approval</li>
+                                <li>Scholarships and other discounts will be discussed separately during enrollment</li>
+                            </ul>
+                        </div>
+
+                        <div
+                            style="background: var(--info-light); border-left: 4px solid var(--info); padding: 1rem; border-radius: 8px; margin-top: 1.5rem;">
+                            <strong style="color: var(--primary);">💡 Tip:</strong> Choose the payment plan that fits
+                            your budget. You can always coordinate with the accounting office for special arrangements.
+                        </div>
+                    </div>
+
+                    <!-- ===== STEP 6: Review & Submit (Previously Step 5) ===== -->
+                    <div class="form-step" id="formStep6">
                         <h2 class="step-title">Review Your Information</h2>
                         <p class="step-description">Please carefully verify all information before submitting</p>
-
-                        <div style="background: var(--warning-light); border-left: 4px solid var(--warning); padding: 1rem; border-radius: 8px; margin-bottom: 2rem;">
-                            <strong style="color: var(--gray-800);">⚠️ Double-check:</strong> Make sure all names and contact details are correct. You can go back to edit if needed.
+                        <div
+                            style="background: var(--warning-light); border-left: 4px solid var(--warning); padding: 1rem; border-radius: 8px; margin-bottom: 2rem;">
+                            <strong style="color: var(--gray-800);">⚠️ Double-check:</strong> Make sure all names and
+                            contact details are correct. You can go back to edit if needed.
                         </div>
 
                         <div class="review-sections" id="reviewContent">
@@ -542,25 +709,30 @@
                         <div class="form-group checkbox-group">
                             <label>
                                 <input type="checkbox" name="agreeTerms" required>
-                                I certify that all information provided above is true, correct, and complete to the best of my knowledge
+                                I certify that all information provided above is true, correct, and complete to the best
+                                of my knowledge
                             </label>
                         </div>
 
                         <div class="form-group checkbox-group">
                             <label>
                                 <input type="checkbox" name="agreePrivacy" required>
-                                I agree to the Data Privacy policy of Manuel S. Enverga University Foundation Inc. and consent to the collection and processing of my personal information
+                                I agree to the Data Privacy policy of Manuel S. Enverga University Foundation Inc. and
+                                consent to the collection and processing of my personal information
                             </label>
                         </div>
 
-                        <div style="background: var(--success-light); border-left: 4px solid var(--success); padding: 1rem; border-radius: 8px; margin-top: 2rem;">
-                            <strong style="color: var(--gray-800);">✅ Next Steps:</strong> After submission, please check your email for confirmation and further instructions from the registrar's office.
+                        <div
+                            style="background: var(--success-light); border-left: 4px solid var(--success); padding: 1rem; border-radius: 8px; margin-top: 2rem;">
+                            <strong style="color: var(--gray-800);">✅ Next Steps:</strong> After submission, please
+                            check your email for confirmation and further instructions from the registrar's office.
                         </div>
                     </div>
 
                     <!-- Navigation Buttons -->
                     <div class="form-navigation">
-                        <button type="button" class="btn btn-secondary" id="prevBtn" onclick="previousStep()" style="display: none;">
+                        <button type="button" class="btn btn-secondary" id="prevBtn" onclick="previousStep()"
+                            style="display: none;">
                             ← Previous
                         </button>
                         <button type="button" class="btn btn-primary" id="nextBtn" onclick="nextStep()">
