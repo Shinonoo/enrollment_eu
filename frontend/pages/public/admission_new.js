@@ -928,40 +928,41 @@ function updateNavigationButtons() {
 }
 
 // ============================================
-// REVIEW GENERATION (SINGLE CARD - CLEAN)
+// REVIEW GENERATION (SINGLE CARD - CLEAN) - WITH PAYMENT SCHEME
 // ============================================
+
 
 function generateReview() {
     const reviewContent = document.getElementById('reviewContent');
     reviewContent.innerHTML = '';
-    
+
     // Helper to get plain value without HTML
     const getPlainValue = (name) => {
         const value = STATE.formData[name];
         return value && value.trim() !== '' ? value : '';
     };
-    
+
     // Helper to get value with "Not provided" message
     const getValue = (name) => {
         const value = STATE.formData[name];
         return value && value.trim() !== '' ? value : '<span class="not-provided">Not provided</span>';
     };
-    
+
     // Build full name properly
     const buildFullName = () => {
         const firstName = getPlainValue('firstName');
         const middleName = getPlainValue('middleName');
         const lastName = getPlainValue('lastName');
         const suffix = getPlainValue('suffix');
-        
+
         if (!firstName && !lastName) {
             return '<span class="not-provided">Not provided</span>';
         }
-        
+
         const nameParts = [firstName, middleName, lastName, suffix].filter(part => part !== '');
         return nameParts.join(' ');
     };
-    
+
     // Build full address
     const buildFullAddress = () => {
         const street = getPlainValue('streetAddress');
@@ -969,25 +970,39 @@ function generateReview() {
         const city = getPlainValue('city');
         const province = getPlainValue('province');
         const zip = getPlainValue('zipCode');
-        
+
         if (!street && !city) {
             return '<span class="not-provided">Not provided</span>';
         }
-        
+
         let address = '';
         if (street) address += street;
         if (barangay) address += (address ? ', ' : '') + 'Brgy. ' + barangay;
         if (city) address += (address ? ', ' : '') + city;
         if (province) address += (address ? ', ' : '') + province;
         if (zip) address += ' ' + zip;
-        
+
         return address || '<span class="not-provided">Not provided</span>';
     };
-    
+
+    // Payment scheme labels
+    const paymentSchemeLabels = {
+        'full_payment': 'Full Payment (100% at enrollment)',
+        '15_percent_down': '15% Downpayment (85% balance via installments)',
+        '10_percent_down': '10% Downpayment (90% balance via installments)',
+        'custom_arrangement': 'Special Payment Arrangement (To be discussed with accounting)'
+    };
+
+    // Get payment scheme display value
+    const getPaymentSchemeLabel = () => {
+        const scheme = getPlainValue('paymentScheme');
+        return scheme ? (paymentSchemeLabels[scheme] || scheme) : '<span class="not-provided">Not selected</span>';
+    };
+
     // === SINGLE MAIN CARD ===
     const mainCard = document.createElement('div');
     mainCard.className = 'review-main-card';
-    
+
     let html = `
         <!-- Photo Section -->
         <div class="review-photo-header">
@@ -1002,16 +1017,16 @@ function generateReview() {
                 <p class="review-subtitle">${getValue('schoolLevel')} - ${getValue('gradeLevel')}</p>
             </div>
         </div>
-        
+
         <!-- Information Grid -->
         <div class="review-info-grid">
-            
+
             <!-- Personal Information Section -->
             <div class="review-section-header">
                 <span class="section-icon">👤</span>
                 <h3>Personal Information</h3>
             </div>
-            
+
             <div class="review-row">
                 <div class="review-field">
                     <span class="field-label">Date of Birth</span>
@@ -1022,7 +1037,7 @@ function generateReview() {
                     <span class="field-value">${getValue('age')}</span>
                 </div>
             </div>
-            
+
             <div class="review-row">
                 <div class="review-field">
                     <span class="field-label">Gender</span>
@@ -1033,29 +1048,29 @@ function generateReview() {
                     <span class="field-value">${getValue('nationality')}</span>
                 </div>
             </div>
-            
+
             <div class="review-row-full">
                 <div class="review-field">
                     <span class="field-label">Place of Birth</span>
                     <span class="field-value">${getValue('placeOfBirth')}</span>
                 </div>
             </div>
-            
+
             <div class="review-divider"></div>
-            
+
             <!-- Contact Information Section -->
             <div class="review-section-header">
                 <span class="section-icon">📍</span>
                 <h3>Contact Information</h3>
             </div>
-            
+
             <div class="review-row-full">
                 <div class="review-field">
                     <span class="field-label">Complete Address</span>
                     <span class="field-value">${buildFullAddress()}</span>
                 </div>
             </div>
-            
+
             <div class="review-row">
                 <div class="review-field">
                     <span class="field-label">Email Address</span>
@@ -1066,15 +1081,15 @@ function generateReview() {
                     <span class="field-value">${getValue('phoneNumber')}</span>
                 </div>
             </div>
-            
+
             <div class="review-divider"></div>
-            
+
             <!-- Guardian Information Section -->
             <div class="review-section-header">
                 <span class="section-icon">👨‍👩‍👧</span>
                 <h3>Guardian Information</h3>
             </div>
-            
+
             <div class="review-row">
                 <div class="review-field">
                     <span class="field-label">Guardian Name</span>
@@ -1085,7 +1100,7 @@ function generateReview() {
                     <span class="field-value">${getValue('guardianRelationship')}</span>
                 </div>
             </div>
-            
+
             <div class="review-row">
                 <div class="review-field">
                     <span class="field-label">Contact Number</span>
@@ -1096,7 +1111,7 @@ function generateReview() {
                     <span class="field-value">${getValue('guardianEmail')}</span>
                 </div>
             </div>
-            
+
             ${getPlainValue('guardianAddress') ? `
             <div class="review-row-full">
                 <div class="review-field">
@@ -1105,15 +1120,15 @@ function generateReview() {
                 </div>
             </div>
             ` : ''}
-            
+
             <div class="review-divider"></div>
-            
+
             <!-- Academic Information Section -->
             <div class="review-section-header">
                 <span class="section-icon">🎓</span>
                 <h3>Academic Background</h3>
             </div>
-            
+
             <div class="review-row">
                 <div class="review-field">
                     <span class="field-label">School Level</span>
@@ -1124,7 +1139,7 @@ function generateReview() {
                     <span class="field-value">${getValue('gradeLevel')}</span>
                 </div>
             </div>
-            
+
             ${getPlainValue('strand') ? `
             <div class="review-row-full">
                 <div class="review-field">
@@ -1133,14 +1148,21 @@ function generateReview() {
                 </div>
             </div>
             ` : ''}
-            
+
+            <div class="review-row-full">
+                <div class="review-field">
+                    <span class="field-label">LRN</span>
+                    <span class="field-value">${getValue('lrn')}</span>
+                </div>
+            </div>
+
             <div class="review-row-full">
                 <div class="review-field">
                     <span class="field-label">Previous School</span>
                     <span class="field-value">${getValue('previousSchool')}</span>
                 </div>
             </div>
-            
+
             <div class="review-row">
                 <div class="review-field">
                     <span class="field-label">Last Grade Completed</span>
@@ -1151,7 +1173,7 @@ function generateReview() {
                     <span class="field-value">${getValue('yearCompleted')}</span>
                 </div>
             </div>
-            
+
             <div class="review-row-highlight">
                 <div class="review-field-highlight">
                     <span class="field-label">General Average</span>
@@ -1164,7 +1186,7 @@ function generateReview() {
                 </div>
                 ` : ''}
             </div>
-            
+
             ${getPlainValue('referralSource') ? `
             <div class="review-row-full">
                 <div class="review-field">
@@ -1173,10 +1195,34 @@ function generateReview() {
                 </div>
             </div>
             ` : ''}
-            
+
+            <div class="review-divider"></div>
+
+            <!-- Payment Scheme Section -->
+            <div class="review-section-header">
+                <span class="section-icon">💳</span>
+                <h3>Payment Option</h3>
+            </div>
+
+            <div class="review-row-full">
+                <div class="review-field">
+                    <span class="field-label">Selected Downpayment Option</span>
+                    <span class="field-value" style="font-weight: 600; color: var(--primary);">${getPaymentSchemeLabel()}</span>
+                </div>
+            </div>
+
+            ${getPlainValue('paymentScheme') === 'custom_arrangement' ? `
+            <div class="review-row-full" style="background: var(--gold-light); padding: 1rem; border-radius: 8px; margin-top: 0.5rem;">
+                <div class="review-field">
+                    <span class="field-label" style="color: var(--primary); font-weight: 600;">📞 Next Step</span>
+                    <span class="field-value">Our accounting clerk will contact you to discuss a customized payment arrangement that suits your budget.</span>
+                </div>
+            </div>
+            ` : ''}
+
         </div>
     `;
-    
+
     mainCard.innerHTML = html;
     reviewContent.appendChild(mainCard);
 }
@@ -1188,52 +1234,85 @@ function generateReview() {
 async function submitForm(e) {
     e.preventDefault();
     hideAlert();
-    
+
+    // Validate step 5 (terms agreement)
     if (!validateStep5()) {
         return;
     }
-    
+
+    // Collect all form data
     collectFormData();
-    
+
+    // Disable submit button
     const submitBtn = document.getElementById('submitBtn');
+    const originalText = submitBtn.textContent;
     submitBtn.disabled = true;
-    submitBtn.textContent = '⏳ Submitting...';
-    
+    submitBtn.textContent = '⏳ Submitting Application...';
+
     try {
+        // Create FormData object for file upload
+        const formData = new FormData();
+
+        // Append all form fields from STATE.formData
+        for (const [key, value] of Object.entries(STATE.formData)) {
+            if (key === 'studentPhoto') {
+                // Append the actual File object
+                if (value instanceof File) {
+                    formData.append('studentPhoto', value);
+                }
+            } else if (key === 'studentPhotoPreview' || key === 'studentPhotoName' || key === 'studentPhotoSize') {
+                // Skip these - they're only for preview
+                continue;
+            } else {
+                // Append regular form fields
+                formData.append(key, value || '');
+            }
+        }
+
+        console.log('Submitting to:', `${CONFIG.API_BASE}/admission/submit`);
+
+        // ⚠️ IMPORTANT: Don't set Content-Type header!
+        // Browser automatically sets it to multipart/form-data with boundary
         const response = await fetch(`${CONFIG.API_BASE}/admission/submit`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(STATE.formData)
+            body: formData  // Send FormData, not JSON
         });
-        
+
         const result = await response.json();
-        
+
+        console.log('Server response:', result);
+
         if (response.ok && result.success) {
+            // Hide form, show success message
             document.getElementById('formContainer').style.display = 'none';
             document.getElementById('successMessage').classList.remove('hidden');
-            document.getElementById('referenceNumber').textContent = result.referenceNumber || result.applicationId;
-            
-            // Clear saved data
+
+            // Display application number
+            document.getElementById('referenceNumber').textContent = 
+                result.applicationNumber || 'N/A';
+
+            // Clear localStorage
             localStorage.removeItem('admissionFormData');
-            localStorage.removeItem('admissionFormStep');
-            
+
             showToast('Application submitted successfully!', 'success');
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
         } else {
+            // Show error message
             showAlert(result.message || 'Submission failed. Please try again.', 'error');
+            console.error('Submission failed:', result);
         }
+
     } catch (error) {
         console.error('Submit error:', error);
         showAlert('Connection error. Please check your internet and try again.', 'error');
     } finally {
+        // Re-enable submit button
         submitBtn.disabled = false;
-        submitBtn.textContent = '🎓 Submit Application';
+        submitBtn.textContent = originalText;
     }
-}
-
-function resetForm() {
-    localStorage.removeItem('admissionFormData');
-    localStorage.removeItem('admissionFormStep');
-    location.reload();
 }
 
 // ============================================
