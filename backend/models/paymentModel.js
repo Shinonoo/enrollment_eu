@@ -3,20 +3,38 @@ const db = require('../config/dbLogger');
 
 exports.getApplicationsForPayment = async () => {
     const [applications] = await db.query(`
-        SELECT a.*, 
-               p.payment_record_id, p.total_amount, p.amount_paid, p.payment_status
-        FROM admission_applications a
-        LEFT JOIN payment_records p ON a.application_id = p.application_id
-        WHERE a.status = 'approved' 
-        AND a.sent_to_accountant_at IS NOT NULL
-        ORDER BY a.sent_to_accountant_at DESC
+        SELECT 
+            a.admission_id as application_id,
+            a.application_number,
+            a.school_level,
+            a.current_status as status,
+            a.submitted_at as sent_to_accountant_at,
+            p.first_name,
+            p.middle_name,
+            p.last_name,
+            p.suffix,
+            g.grade_name as grade_level,
+            s.strand_name as strand,
+            a.total_assessed as total_amount,
+            a.total_paid as amount_paid,
+            CASE 
+                WHEN a.total_paid = 0 THEN 'pending'
+                WHEN a.total_paid >= a.total_assessed THEN 'paid'
+                ELSE 'partial'
+            END as payment_status
+        FROM admissions a
+        JOIN applicants_personal_info p ON a.admission_id = p.admission_id
+        JOIN grade_levels g ON a.grade_level_id = g.grade_level_id
+        LEFT JOIN strands s ON a.strand_id = s.strand_id
+        WHERE a.current_status IN ('sent_to_accounting', 'payment_assessed', 'ready_for_payment')
+        ORDER BY a.submitted_at DESC
     `);
     return applications;
 };
 
 exports.checkPaymentExists = async (applicationId) => {
     const [existing] = await db.query(
-        'SELECT payment_record_id FROM payment_records WHERE application_id = ?',
+        'SELECT assessment_id FROM payment_assessments WHERE admission_id = ?',
         [applicationId]
     );
     return existing.length > 0;
@@ -24,9 +42,17 @@ exports.checkPaymentExists = async (applicationId) => {
 
 exports.getPaymentSchemes = async () => {
     const [schemes] = await db.query(`
-        SELECT * FROM payment_schemes 
+        SELECT 
+            scheme_id,
+            scheme_code,
+            scheme_name,
+            description,
+            discount_percentage,
+            number_of_installments,
+            is_active
+        FROM payment_schemes 
         WHERE is_active = 1 
-        ORDER BY school_level, grade_level
+        ORDER BY scheme_name
     `);
     return schemes;
 };
@@ -34,37 +60,31 @@ exports.getPaymentSchemes = async () => {
 exports.createPaymentScheme = async (data) => {
     const [result] = await db.query(
         `INSERT INTO payment_schemes (
-            scheme_name, school_level, grade_level, school_year,
-            total_amount, upon_enrollment, installment_count, 
-            installment_amount, cash_discount, description
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            scheme_code, scheme_name, description,
+            discount_percentage, number_of_installments, is_active
+        ) VALUES (?, ?, ?, ?, ?, 1)`,
         [
+            data.schemeCode || data.schemeName.toLowerCase().replace(/\s+/g, '_'),
             data.schemeName, 
-            data.schoolLevel, 
-            data.gradeLevel, 
-            data.schoolYear || '2025-2026',
-            data.totalAmount, 
-            data.uponEnrollment || 0,
-            data.installmentCount || 1,
-            data.installmentAmount || 0,
-            data.cashDiscount || 0,
-            data.description || null
+            data.description || null,
+            data.discountPercentage || 0,
+            data.numberOfInstallments || 1
         ]
     );
     return result;
 };
 
-
 exports.getPaymentStatistics = async () => {
     const [stats] = await db.query(`
         SELECT 
             COUNT(*) as total,
-            SUM(CASE WHEN payment_status = 'pending' THEN 1 ELSE 0 END) as pending,
-            SUM(CASE WHEN payment_status = 'partial' THEN 1 ELSE 0 END) as partial,
-            SUM(CASE WHEN payment_status = 'paid' THEN 1 ELSE 0 END) as paid,
-            SUM(total_amount) as total_amount,
-            SUM(amount_paid) as total_collected
-        FROM payment_records
+            SUM(CASE WHEN current_status IN ('submitted', 'pending_verification', 'documents_verified') THEN 1 ELSE 0 END) as pending,
+            SUM(CASE WHEN current_status = 'partial_payment' THEN 1 ELSE 0 END) as processing,
+            SUM(CASE WHEN current_status IN ('payment_completed', 'approved', 'enrolled') THEN 1 ELSE 0 END) as paid,
+            SUM(total_assessed) as total_amount,
+            SUM(total_paid) as total_collected
+        FROM admissions
+        WHERE current_status != 'rejected'
     `);
     return stats[0];
 };
@@ -72,37 +92,55 @@ exports.getPaymentStatistics = async () => {
 exports.getPendingPayments = async () => {
     const [payments] = await db.query(`
         SELECT 
-            p.*,
-            a.first_name, a.last_name, a.school_level, a.grade_level,
-            a.email, a.phone_number,
-            s.scheme_name,
-            p.upon_enrollment,
-            p.installment_count,
-            p.installment_amount
-        FROM payment_records p
-        JOIN admission_applications a ON p.application_id = a.application_id
-        LEFT JOIN payment_schemes s ON p.scheme_id = s.scheme_id
-        WHERE p.payment_status IN ('pending', 'partial', 'paid')
-        ORDER BY p.created_at DESC
+            a.admission_id as payment_record_id,
+            a.admission_id as application_id,
+            a.application_number,
+            p.first_name,
+            p.last_name,
+            a.school_level,
+            g.grade_name as grade_level,
+            p.email,
+            p.phone_number,
+            ps.scheme_name,
+            a.total_assessed as total_amount,
+            a.total_paid as amount_paid,
+            a.remaining_balance,
+            CASE 
+                WHEN a.total_paid = 0 THEN 'pending'
+                WHEN a.total_paid >= a.total_assessed THEN 'paid'
+                ELSE 'partial'
+            END as payment_status,
+            a.submitted_at as created_at
+        FROM admissions a
+        JOIN applicants_personal_info p ON a.admission_id = p.admission_id
+        JOIN grade_levels g ON a.grade_level_id = g.grade_level_id
+        LEFT JOIN payment_assessments pa ON a.admission_id = pa.admission_id
+        LEFT JOIN payment_schemes ps ON pa.approved_payment_scheme = ps.scheme_code
+        WHERE a.current_status IN ('ready_for_payment', 'partial_payment', 'payment_completed')
+        ORDER BY a.submitted_at DESC
     `);
     return payments;
 };
 
-
-// Get payment by ID - SINGLE DEFINITION
 exports.getPaymentById = async (paymentRecordId) => {
     const [result] = await db.query(
         `SELECT 
-            payment_record_id, 
-            application_id, 
-            amount_paid, 
-            total_amount, 
-            payment_status,
-            upon_enrollment,
-            installment_count,
-            installment_amount
-         FROM payment_records 
-         WHERE payment_record_id = ?`,
+            a.admission_id as payment_record_id,
+            a.admission_id as application_id,
+            a.total_paid as amount_paid,
+            a.total_assessed as total_amount,
+            a.remaining_balance,
+            CASE 
+                WHEN a.total_paid = 0 THEN 'pending'
+                WHEN a.total_paid >= a.total_assessed THEN 'paid'
+                ELSE 'partial'
+            END as payment_status,
+            pa.down_payment_amount as upon_enrollment,
+            pa.number_of_installments as installment_count,
+            (a.remaining_balance / NULLIF(pa.number_of_installments - 1, 0)) as installment_amount
+         FROM admissions a
+         LEFT JOIN payment_assessments pa ON a.admission_id = pa.admission_id
+         WHERE a.admission_id = ?`,
         [paymentRecordId]
     );
     return result[0] || null;
@@ -110,38 +148,52 @@ exports.getPaymentById = async (paymentRecordId) => {
 
 exports.recordPaymentTransaction = async (data) => {
     await db.query(
-        `INSERT INTO payment_transactions (
-            payment_record_id, amount, payment_method, 
-            reference_number, recorded_by
-        ) VALUES (?, ?, ?, ?, ?)`,
+        `INSERT INTO payments (
+            admission_id, amount, payment_method, 
+            reference_number, received_by, payment_type
+        ) VALUES (?, ?, ?, ?, ?, 'installment')`,
         [data.paymentRecordId, data.amount, data.paymentMethod, data.referenceNumber || null, data.userId]
     );
 };
 
 exports.updatePaymentRecord = async (paymentRecordId, amountPaid, status) => {
+    const statusMap = {
+        'pending': 'ready_for_payment',
+        'partial': 'partial_payment',
+        'paid': 'payment_completed'
+    };
+
     await db.query(
-        `UPDATE payment_records 
-        SET amount_paid = ?, payment_status = ?, updated_at = NOW()
-        WHERE payment_record_id = ?`,
-        [amountPaid, status, paymentRecordId]
+        `UPDATE admissions 
+        SET total_paid = ?, 
+            remaining_balance = total_assessed - ?,
+            current_status = ?,
+            updated_at = NOW()
+        WHERE admission_id = ?`,
+        [amountPaid, amountPaid, statusMap[status] || status, paymentRecordId]
     );
 };
 
-// Update payment status
 exports.updatePaymentStatus = async (paymentRecordId, status) => {
+    const statusMap = {
+        'pending': 'ready_for_payment',
+        'processing': 'sent_to_accounting',
+        'paid': 'payment_completed'
+    };
+
     await db.query(
-        `UPDATE payment_records 
-         SET payment_status = ?, 
+        `UPDATE admissions 
+         SET current_status = ?, 
              updated_at = NOW() 
-         WHERE payment_record_id = ?`,
-        [status, paymentRecordId]
+         WHERE admission_id = ?`,
+        [statusMap[status] || status, paymentRecordId]
     );
     return true;
 };
 
 exports.getApplicationById = async (applicationId) => {
     const [applications] = await db.query(
-        'SELECT * FROM admission_applications WHERE application_id = ?',
+        'SELECT * FROM admissions WHERE admission_id = ?',
         [applicationId]
     );
     return applications[0] || null;
@@ -154,23 +206,29 @@ exports.getLastStudentNumber = async () => {
     return lastStudent.length > 0 ? lastStudent[0] : null;
 };
 
-
 exports.updateAdmissionToEnrolled = async (applicationId) => {
     await db.query(
-        `UPDATE admission_applications 
-         SET status = 'enrolled'
-         WHERE application_id = ?`,
+        `UPDATE admissions 
+         SET current_status = 'enrolled',
+             enrolled_at = NOW()
+         WHERE admission_id = ?`,
         [applicationId]
     );
 };
 
 exports.getPaymentHistory = async (paymentRecordId) => {
     const [transactions] = await db.query(
-        `SELECT t.*, u.full_name as cashier_name
-         FROM payment_transactions t
-         LEFT JOIN users u ON t.recorded_by = u.user_id
-         WHERE t.payment_record_id = ?
-         ORDER BY t.transaction_date DESC`,
+        `SELECT 
+            p.payment_id as transaction_id,
+            p.amount,
+            p.payment_method,
+            p.reference_number,
+            p.payment_date as transaction_date,
+            CONCAT(u.first_name, ' ', u.last_name) as cashier_name
+         FROM payments p
+         LEFT JOIN users u ON p.received_by = u.user_id
+         WHERE p.admission_id = ?
+         ORDER BY p.payment_date DESC`,
         [paymentRecordId]
     );
     return transactions;
@@ -179,19 +237,44 @@ exports.getPaymentHistory = async (paymentRecordId) => {
 exports.getProcessingStudents = async () => {
     const [students] = await db.query(`
         SELECT 
-            p.*,
-            a.first_name, a.last_name, a.middle_name, a.suffix,
-            a.school_level, a.grade_level, a.strand,
-            a.email, a.phone_number,
-            a.street, a.barangay, a.city, a.province, a.zip_code,
-            a.guardian_name, a.guardian_relationship, a.guardian_phone, a.guardian_email,
-            a.date_of_birth, a.gender, a.previous_school,
-            s.scheme_name
-        FROM payment_records p
-        JOIN admission_applications a ON p.application_id = a.application_id
-        LEFT JOIN payment_schemes s ON p.scheme_id = s.scheme_id
-        WHERE p.payment_status = 'processing'
-        ORDER BY p.updated_at DESC
+            a.admission_id as payment_record_id,
+            a.admission_id as application_id,
+            p.first_name,
+            p.last_name,
+            p.middle_name,
+            p.suffix,
+            a.school_level,
+            g.grade_name as grade_level,
+            s.strand_name as strand,
+            p.email,
+            p.phone_number,
+            addr.street_address as street,
+            addr.barangay,
+            addr.city_municipality as city,
+            addr.province,
+            addr.zip_code,
+            g1.guardian_name,
+            g1.guardian_relationship,
+            g1.guardian_phone,
+            g1.guardian_email,
+            p.date_of_birth,
+            p.gender,
+            ac.previous_school_name as previous_school,
+            ps.scheme_name,
+            a.total_assessed as total_amount,
+            a.total_paid as amount_paid,
+            a.updated_at
+        FROM admissions a
+        JOIN applicants_personal_info p ON a.admission_id = p.admission_id
+        JOIN grade_levels g ON a.grade_level_id = g.grade_level_id
+        LEFT JOIN strands s ON a.strand_id = s.strand_id
+        LEFT JOIN applicants_address addr ON a.admission_id = addr.admission_id
+        LEFT JOIN applicants_guardians g1 ON a.admission_id = g1.admission_id AND g1.is_primary = 1
+        LEFT JOIN applicants_academic ac ON a.admission_id = ac.admission_id
+        LEFT JOIN payment_assessments pa ON a.admission_id = pa.admission_id
+        LEFT JOIN payment_schemes ps ON pa.approved_payment_scheme = ps.scheme_code
+        WHERE a.current_status = 'sent_to_accounting'
+        ORDER BY a.updated_at DESC
     `);
     return students;
 };
@@ -199,35 +282,59 @@ exports.getProcessingStudents = async () => {
 exports.getStudentDetails = async (paymentRecordId) => {
     const [result] = await db.query(`
         SELECT 
-            p.*,
-            a.first_name, a.last_name, a.middle_name, a.suffix,
-            a.date_of_birth, a.gender, a.email, a.phone_number,
-            a.street, a.barangay, a.city, a.province, a.zip_code,
-            a.guardian_name, a.guardian_relationship, a.guardian_phone, a.guardian_email,
-            a.school_level, a.grade_level, a.strand, a.previous_school,
-            s.scheme_name
-        FROM payment_records p
-        JOIN admission_applications a ON p.application_id = a.application_id
-        LEFT JOIN payment_schemes s ON p.scheme_id = s.scheme_id
-        WHERE p.payment_record_id = ?
+            a.admission_id as payment_record_id,
+            a.admission_id as application_id,
+            p.first_name,
+            p.last_name,
+            p.middle_name,
+            p.suffix,
+            p.date_of_birth,
+            p.gender,
+            p.email,
+            p.phone_number,
+            addr.street_address as street,
+            addr.barangay,
+            addr.city_municipality as city,
+            addr.province,
+            addr.zip_code,
+            g1.guardian_name,
+            g1.guardian_relationship,
+            g1.guardian_phone,
+            g1.guardian_email,
+            a.school_level,
+            g.grade_name as grade_level,
+            s.strand_name as strand,
+            ac.previous_school_name as previous_school,
+            ps.scheme_name,
+            a.total_assessed as total_amount,
+            a.total_paid as amount_paid
+        FROM admissions a
+        JOIN applicants_personal_info p ON a.admission_id = p.admission_id
+        JOIN grade_levels g ON a.grade_level_id = g.grade_level_id
+        LEFT JOIN strands s ON a.strand_id = s.strand_id
+        LEFT JOIN applicants_address addr ON a.admission_id = addr.admission_id
+        LEFT JOIN applicants_guardians g1 ON a.admission_id = g1.admission_id AND g1.is_primary = 1
+        LEFT JOIN applicants_academic ac ON a.admission_id = ac.admission_id
+        LEFT JOIN payment_assessments pa ON a.admission_id = pa.admission_id
+        LEFT JOIN payment_schemes ps ON pa.approved_payment_scheme = ps.scheme_code
+        WHERE a.admission_id = ?
     `, [paymentRecordId]);
-    
+
     return result[0] || null;
 };
 
 exports.createStudent = async (data) => {
-    await db.query(
+    const [result] = await db.query(
         `INSERT INTO students (
-            student_number, application_id, first_name, middle_name, last_name, suffix,
+            student_number, admission_id, lrn,
+            first_name, middle_name, last_name, suffix,
             date_of_birth, gender, email, phone_number,
-            street, barangay, city, province, zip_code,
-            guardian_name, guardian_relationship, guardian_phone, guardian_email,
-            school_level, current_grade_level, strand,
-            student_type, enrollment_status, school_year
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            current_status
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')`,
         [
             data.studentNumber,
-            data.applicationId || null,
+            data.applicationId,
+            data.lrn || '',
             data.first_name,
             data.middle_name,
             data.last_name,
@@ -235,135 +342,138 @@ exports.createStudent = async (data) => {
             data.date_of_birth,
             data.gender,
             data.email,
-            data.phone_number,
-            data.street,  // maps to street
-            data.barangay,  // maps to barangay
-            data.city,
-            data.province,
-            data.zip_code,      // Changed to zip_code (with underscore)
-            data.guardian_name,
-            data.guardian_relationship,
-            data.guardian_phone,
-            data.guardian_email,
-            data.school_level,
-            data.grade_level,
-            data.strand,
-            'regular',
-            'enrolled',
-            '2025-2026'
+            data.phone_number
         ]
     );
+    return result;
 };
 
 exports.markSentToCashier = async (applicationId) => {
-  await db.query(
-    'UPDATE admission_applications SET sent_to_cashier_at = NOW() WHERE application_id = ?',
-    [applicationId]
-  );
+    await db.query(
+        `UPDATE admissions 
+         SET current_status = 'ready_for_payment',
+             sent_to_accounting_at = NOW() 
+         WHERE admission_id = ?`,
+        [applicationId]
+    );
 };
 
-// In paymentModel.js
 exports.linkPaymentToApplication = async (applicationId, paymentRecordId) => {
-  await db.query(
-    `UPDATE admission_applications 
-     SET payment_record_id = ?, sent_to_cashier_at = NOW() 
-     WHERE application_id = ?`,
-    [paymentRecordId, applicationId]
-  );
+    await db.query(
+        `UPDATE admissions 
+         SET current_status = 'ready_for_payment'
+         WHERE admission_id = ?`,
+        [applicationId]
+    );
 };
 
-// Update payment scheme
 exports.updatePaymentScheme = async (schemeId, data) => {
     const [result] = await db.query(
         `UPDATE payment_schemes 
          SET scheme_name = ?,
-             school_level = ?,
-             grade_level = ?,
-             total_amount = ?,
-             upon_enrollment = ?,
-             installment_count = ?,
-             installment_amount = ?,
-             cash_discount = ?,
              description = ?,
+             discount_percentage = ?,
+             number_of_installments = ?,
              updated_at = NOW()
          WHERE scheme_id = ?`,
         [
             data.schemeName,
-            data.schoolLevel,
-            data.gradeLevel,
-            data.totalAmount,
-            data.uponEnrollment || 0,
-            data.installmentCount,
-            data.installmentAmount,
-            data.cashDiscount || 0,
             data.description || null,
+            data.discountPercentage || 0,
+            data.numberOfInstallments,
             schemeId
         ]
     );
     return result.affectedRows;
 };
 
-// Delete payment scheme
 exports.deletePaymentScheme = async (schemeId) => {
     const [result] = await db.query(
-        'DELETE FROM payment_schemes WHERE scheme_id = ?',
+        'UPDATE payment_schemes SET is_active = 0 WHERE scheme_id = ?',
         [schemeId]
     );
     return result.affectedRows;
 };
 
-// Get scheme details by payment record ID
 exports.getSchemeDetailsByPaymentRecord = async (paymentRecordId) => {
     const [result] = await db.query(`
         SELECT 
-            pr.total_amount,
-            pr.upon_enrollment,
-            pr.installment_count,
-            pr.installment_amount,
-            pr.is_custom_payment,
-            pr.notes as custom_reason,
+            a.total_assessed as total_amount,
+            pa.down_payment_amount as upon_enrollment,
+            pa.number_of_installments as installment_count,
+            (a.remaining_balance / NULLIF(pa.number_of_installments - 1, 0)) as installment_amount,
+            CASE WHEN pa.approved_payment_scheme = 'custom' THEN 1 ELSE 0 END as is_custom_payment,
+            pa.notes as custom_reason,
             ps.scheme_name
-        FROM payment_records pr
-        LEFT JOIN payment_schemes ps ON pr.scheme_id = ps.scheme_id
-        WHERE pr.payment_record_id = ?
+        FROM admissions a
+        LEFT JOIN payment_assessments pa ON a.admission_id = pa.admission_id
+        LEFT JOIN payment_schemes ps ON pa.approved_payment_scheme = ps.scheme_code
+        WHERE a.admission_id = ?
     `, [paymentRecordId]);
-    
+
     return result[0] || null;
 };
 
 exports.createPaymentRecord = async (data) => {
     const [result] = await db.query(
-        `INSERT INTO payment_records (
-            application_id, scheme_id, total_amount, amount_paid, 
-            upon_enrollment, installment_count, installment_amount,
-            is_custom_payment, payment_status, notes, created_by
-        ) VALUES (?, ?, ?, 0, ?, ?, ?, ?, 'pending', ?, ?)`,
+        `INSERT INTO payment_assessments (
+            admission_id, total_amount, net_amount,
+            approved_payment_scheme, down_payment_amount,
+            number_of_installments, assessed_by, notes
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         [
-            data.applicationId, 
-            data.schemeId, 
-            data.totalAmount, 
+            data.applicationId,
+            data.totalAmount,
+            data.totalAmount,
+            data.schemeCode || 'custom',
             data.uponEnrollment || 0,
             data.installmentCount || 1,
-            data.installmentAmount || 0,
-            data.isCustomPayment || 0,
-            data.notes, 
-            data.userId
+            data.userId,
+            data.notes
         ]
     );
+
+    // Update admission status
+    await db.query(
+        `UPDATE admissions 
+         SET current_status = 'payment_assessed',
+             total_assessed = ?,
+             assessed_at = NOW()
+         WHERE admission_id = ?`,
+        [data.totalAmount, data.applicationId]
+    );
+
     return result;
 };
 
 exports.getTransactionById = async (transactionId) => {
     const [result] = await db.query(
-        'SELECT * FROM payment_transactions WHERE transaction_id = ?',
+        'SELECT * FROM payments WHERE payment_id = ?',
         [transactionId]
     );
     return result[0] || null;
 };
 
 exports.deleteTransaction = async (transactionId) => {
-    await db.query(
-        'DELETE FROM payment_transactions WHERE transaction_id = ?',
+    // Get transaction details first
+    const [transaction] = await db.query(
+        'SELECT admission_id, amount FROM payments WHERE payment_id = ?',
         [transactionId]
     );
+
+    if (transaction.length > 0) {
+        // Delete transaction
+        await db.query(
+            'DELETE FROM payments WHERE payment_id = ?',
+            [transactionId]
+        );
+
+        // Recalculate totals for the admission
+        await db.query(`
+            UPDATE admissions a
+            SET total_paid = (SELECT COALESCE(SUM(amount), 0) FROM payments WHERE admission_id = a.admission_id),
+                remaining_balance = total_assessed - (SELECT COALESCE(SUM(amount), 0) FROM payments WHERE admission_id = a.admission_id)
+            WHERE admission_id = ?
+        `, [transaction[0].admission_id]);
+    }
 };
