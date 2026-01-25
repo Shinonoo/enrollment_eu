@@ -3,7 +3,7 @@ const db = require('../config/dbLogger');
 
 exports.getUserByUsername = async (username) => {
     const [users] = await db.query(
-        'SELECT user_id, username, password_hash, email, full_name, role, is_active FROM users WHERE username = ?',
+        'SELECT user_id, username, password_hash, email, first_name, last_name, role, is_active FROM users WHERE username = ?',
         [username]
     );
     return users[0] || null;
@@ -18,7 +18,7 @@ exports.updateLastLogin = async (userId) => {
 
 exports.getUserById = async (userId) => {
     const [users] = await db.query(
-        'SELECT user_id, username, email, full_name, role, last_login, created_at FROM users WHERE user_id = ?',
+        'SELECT user_id, username, email, first_name, last_name, role, last_login, created_at FROM users WHERE user_id = ?',
         [userId]
     );
     return users[0] || null;

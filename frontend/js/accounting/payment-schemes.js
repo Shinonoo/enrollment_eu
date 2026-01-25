@@ -512,53 +512,56 @@ async function submitScheme() {
         return;
     }
 
-    const schemeId = document.getElementById('schemeId').value;
-    const schemeName = document.getElementById('schemeName').value;
-    const schoolLevel = document.getElementById('schoolLevel').value;
-    const gradeLevel = document.getElementById('gradeLevel').value;
-    const totalAmount = document.getElementById('totalAmount').value;
-    const downPayment = document.getElementById('downPayment').value || 0;  // ADD THIS
-    const installmentCount = document.getElementById('installmentCount').value;
-    const cashDiscount = document.getElementById('cashDiscount').value || 0;  // ADD THIS
-    const description = document.getElementById('description').value;
+    // In submitScheme() function, replace the body with:
+const schemeId = document.getElementById('schemeId').value;
+const schemeName = document.getElementById('schemeName').value;
+const schoolLevel = document.getElementById('schoolLevel').value;
+const gradeLevel = parseInt(document.getElementById('gradeLevel').value); // Parse as integer
+const totalAmount = parseFloat(document.getElementById('totalAmount').value);
+const downPayment = parseFloat(document.getElementById('downPayment').value) || 0;
+const installmentCount = parseInt(document.getElementById('installmentCount').value);
+const cashDiscount = parseFloat(document.getElementById('cashDiscount').value) || 0;
+const description = document.getElementById('description').value;
 
-    const remaining = parseFloat(totalAmount) - parseFloat(downPayment);
-    const installmentAmount = remaining / parseInt(installmentCount);
+const remaining = totalAmount - downPayment;
+const installmentAmount = remaining / installmentCount;
 
-    try {
-        const endpoint = STATE.isEditing 
-            ? `/payments/schemes/${schemeId}`
-            : '/payments/schemes';
+try {
+    const endpoint = STATE.isEditing 
+        ? `/payments/schemes/${schemeId}`
+        : '/payments/schemes';
 
-        const method = STATE.isEditing ? 'PUT' : 'POST';
+    const method = STATE.isEditing ? 'PUT' : 'POST';
 
-        await fetchAPI(endpoint, {
-            method,
-            body: JSON.stringify({
-                schemeName,
-                schoolLevel,
-                gradeLevel,
-                totalAmount,
-                uponEnrollment: downPayment,        // ADD THIS
-                installmentCount,
-                installmentAmount: installmentAmount.toFixed(2),
-                cashDiscount,                        // ADD THIS
-                description
-            })
-        });
+    await fetchAPI(endpoint, {
+        method,
+        body: JSON.stringify({
+            schemeName,
+            schoolLevel,
+            gradeLevel,        // Now sending as integer
+            schoolYearId: 1,   // Set current school year (adjust as needed)
+            totalAmount,
+            uponEnrollment: downPayment,
+            installmentCount,
+            installmentAmount: installmentAmount.toFixed(2),
+            cashDiscount,
+            description
+        })
+    });
 
-        showToast(
-            STATE.isEditing 
-                ? 'Scheme updated successfully!' 
-                : 'Scheme created successfully!',
-            'success'
-        );
-        
-        closeModal();
-        loadSchemes();
-    } catch (error) {
-        showToast('Failed to save scheme', 'error');
-    }
+    showToast(
+        STATE.isEditing 
+            ? 'Scheme updated successfully!' 
+            : 'Scheme created successfully!',
+        'success'
+    );
+    
+    closeModal();
+    loadSchemes();
+} catch (error) {
+    showToast('Failed to save scheme', 'error');
+}
+
 }
 
 function openDeleteModal(schemeId, schemeName) {

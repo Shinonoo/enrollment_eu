@@ -3,7 +3,7 @@
 // ============================================
 
 const CONFIG = {
-    API_BASE: 'http://localhost:3000/api',
+    API_BASE: 'http://localhost:5001/api',
     REFRESH_INTERVAL: 60000, // 60 seconds
     TOAST_DURATION: 3000
 };

@@ -1,5 +1,5 @@
 // API base URL
-const API_URL = 'http://localhost:5001/api';
+const API_URL = 'http://localhost:3000/api';
 
 const loginForm = document.getElementById('loginForm');
 const errorMessage = document.getElementById('errorMessage');
@@ -7,16 +7,16 @@ const errorMessage = document.getElementById('errorMessage');
 // ✅ Add event listener to the form
 loginForm.addEventListener('submit', async (event) => {
     event.preventDefault();
-    
+
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
     const loginBtn = event.target.querySelector('.login-btn');
     const btnText = loginBtn.querySelector('span') || loginBtn;
-    
+
     // Add loading state
     btnText.textContent = 'Signing In...';
     loginBtn.disabled = true;
-    
+
     try {
         const response = await fetch(`${API_URL}/auth/login`, {
             method: 'POST',
@@ -31,24 +31,25 @@ loginForm.addEventListener('submit', async (event) => {
         if (response.ok && data.success) {
             // Hide error message
             errorMessage.classList.remove('show');
-            
+
             // Success animation
             btnText.textContent = 'Success!';
             loginBtn.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
-            
+
             // Store token and user info
             localStorage.setItem('token', data.token);
             localStorage.setItem('user', JSON.stringify(data.user));
-            
+
             // ✅ ROLE-BASED REDIRECT
             setTimeout(() => {
                 switch(data.user.role) {
                     case 'admin':
+                    case 'registrar':
                     case 'registrar_shs':
                     case 'registrar_jhs':
                         window.location.href = '/pages/registrar/dashboard.html';
                         break;
-                    case 'accountant':
+                    case 'accounting_clerk':
                         window.location.href = '/pages/accounting/dashboard.html';
                         break;
                     case 'cashier':
@@ -64,10 +65,10 @@ loginForm.addEventListener('submit', async (event) => {
             errorMessage.classList.add('show');
             btnText.textContent = 'Sign In';
             loginBtn.disabled = false;
-            
+
             // Clear password
             document.getElementById('password').value = '';
-            
+
             // Remove error after 4 seconds
             setTimeout(() => {
                 errorMessage.classList.remove('show');
@@ -79,7 +80,7 @@ loginForm.addEventListener('submit', async (event) => {
         errorMessage.classList.add('show');
         btnText.textContent = 'Sign In';
         loginBtn.disabled = false;
-        
+
         setTimeout(() => {
             errorMessage.classList.remove('show');
         }, 4000);
@@ -92,11 +93,12 @@ if (localStorage.getItem('token')) {
     if (user && user.role) {
         switch(user.role) {
             case 'admin':
+            case 'registrar':
             case 'registrar_shs':
             case 'registrar_jhs':
                 window.location.href = '/pages/registrar/dashboard.html';
                 break;
-            case 'accountant':
+            case 'accounting_clerk':
                 window.location.href = '/pages/accounting/dashboard.html';
                 break;
             case 'cashier':
@@ -123,7 +125,7 @@ inputs.forEach(input => {
         this.parentElement.style.transform = 'translateX(3px)';
         this.parentElement.style.transition = 'transform 0.2s ease';
     });
-    
+
     input.addEventListener('blur', function() {
         this.parentElement.style.transform = 'translateX(0)';
     });
