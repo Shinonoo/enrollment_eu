@@ -47,13 +47,16 @@ const login = async (req, res) => {
         // Update last login
         await AuthModel.updateLastLogin(user.user_id);
 
+        // Combine first_name and last_name into fullName
+        const fullName = `${user.first_name} ${user.last_name}`.trim();
+
         // Generate JWT token
         const token = jwt.sign(
             {
                 userId: user.user_id,
                 username: user.username,
                 role: user.role,
-                fullName: user.full_name
+                fullName: fullName
             },
             process.env.JWT_SECRET,
             { expiresIn: process.env.JWT_EXPIRE || '24h' }
@@ -68,7 +71,7 @@ const login = async (req, res) => {
                 userId: user.user_id,
                 username: user.username,
                 email: user.email,
-                fullName: user.full_name,
+                fullName: fullName,
                 role: user.role
             }
         });
@@ -108,9 +111,15 @@ const getCurrentUser = async (req, res) => {
             });
         }
 
+        // Combine first_name and last_name into fullName
+        const fullName = `${user.first_name} ${user.last_name}`.trim();
+
         res.json({
             success: true,
-            user
+            user: {
+                ...user,
+                fullName: fullName
+            }
         });
 
     } catch (error) {
