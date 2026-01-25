@@ -5,11 +5,14 @@ const path = require('path');
 const fs = require('fs');
 const admissionController = require('../controllers/admissionController');
 
+
 // ============================================
 // SETUP UPLOAD DIRECTORY
 // ============================================
 
+
 const uploadDir = path.join(__dirname, '../../frontend/uploads/student_photos');
+
 
 // Force create directory with proper permissions
 try {
@@ -30,9 +33,11 @@ try {
     console.error('❌ Upload directory error:', error.message);
 }
 
+
 // ============================================
 // MULTER CONFIGURATION
 // ============================================
+
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -54,6 +59,7 @@ const storage = multer.diskStorage({
     }
 });
 
+
 const fileFilter = (req, file, cb) => {
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
     if (allowedTypes.includes(file.mimetype)) {
@@ -63,19 +69,35 @@ const fileFilter = (req, file, cb) => {
     }
 };
 
+
 const upload = multer({
     storage: storage,
-    limits: { fileSize: 2 * 1024 * 1024 },
+    limits: { fileSize: 2 * 1024 * 1024 }, // 2MB limit
     fileFilter: fileFilter
 });
+
 
 // ============================================
 // ROUTES
 // ============================================
 
+
+// POST: Submit new admission application
 router.post('/submit', (req, res, next) => {
     upload.single('studentPhoto')(req, res, (err) => {
-        if (err) {
+        if (err instanceof multer.MulterError) {
+            console.error('❌ Multer error:', err.message);
+            if (err.code === 'LIMIT_FILE_SIZE') {
+                return res.status(400).json({
+                    success: false,
+                    message: 'File size exceeds 2MB limit'
+                });
+            }
+            return res.status(400).json({
+                success: false,
+                message: err.message
+            });
+        } else if (err) {
             console.error('❌ Upload error:', err.message);
             return res.status(400).json({
                 success: false,
@@ -95,9 +117,29 @@ router.post('/submit', (req, res, next) => {
     });
 });
 
-router.get('/status/:applicationNumber', admissionController.getAdmissionStatus);
+
+// GET: Get all admissions with filters
+router.get('/', admissionController.getAllAdmissions);
+
+
+// GET: Get pending admissions only
 router.get('/pending', admissionController.getPendingAdmissions);
+
+
+// POST: Send approved applications to accounting
+router.post('/send-to-accounting', admissionController.sendToAccounting);
+
+
+// GET: Get admission status by application number
+router.get('/status/:applicationNumber', admissionController.getAdmissionStatus);
+
+
+// GET: Get admission by ID (must come after specific routes)
 router.get('/:admissionId', admissionController.getAdmissionById);
+
+
+// PATCH: Update admission status
 router.patch('/:admissionId/status', admissionController.updateAdmissionStatus);
+
 
 module.exports = router;
